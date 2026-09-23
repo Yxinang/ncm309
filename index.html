@@ -311,13 +311,13 @@
     <!-- 設定頁面 -->
     <section id="tab-settings" class="page-section">
       
-      <!-- 【跨裝置資料轉移】 -->
+      <!-- 跨裝置同步升級版 -->
       <div class="card">
-        <div class="card-title"><i class="fa-solid fa-mobile-screen-button" style="color:#2563eb;"></i> 跨裝置資料同步 (匯出/匯入)</div>
-        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">將目前裝置的名單、寵物進度與設定匯出，傳至另一台裝置匯入即可無縫接軌！</p>
+        <div class="card-title"><i class="fa-solid fa-mobile-screen-button" style="color:#2563eb;"></i> 跨裝置資料同步 (萬國碼核心)</div>
+        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">將這台裝置的所有資料（名單、寵物分數、公告等）精確打包給另一台裝置。</p>
         <button class="btn-submit" style="background:#2563eb; margin-bottom:10px;" onclick="exportData()">📦 1. 產生並複製同步代碼</button>
-        <textarea id="syncDataInput" class="form-control" rows="3" placeholder="在另一台裝置貼上複製好的代碼..." style="margin-bottom:10px; font-size:0.75rem; color:#64748b;"></textarea>
-        <button class="btn-submit" style="background:#059669;" onclick="importData()">📥 2. 貼上代碼並匯入覆蓋</button>
+        <textarea id="syncDataInput" class="form-control" rows="4" placeholder="在另一台裝置貼上複製好的代碼..." style="margin-bottom:10px; font-size:0.75rem; color:#475569; word-break:break-all;"></textarea>
+        <button class="btn-submit" style="background:#059669;" onclick="importData()">📥 2. 貼上代碼並強制更新匯入</button>
       </div>
 
       <div class="card">
@@ -343,7 +343,6 @@
         <button class="btn-submit" style="margin-top:8px; background:#059669;" onclick="saveSheetsUrl()">儲存連結</button>
       </div>
 
-      <!-- 進階資料清除 -->
       <div class="card">
         <div class="card-title"><i class="fa-solid fa-triangle-exclamation text-danger"></i> 進階資料清除 (測試後重置)</div>
         <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">如果您剛測試完系統，準備正式讓學生使用，可以在這裡一鍵清除寵物測試資料。</p>
@@ -387,7 +386,6 @@
     <div class="modal-box" style="text-align:center;">
       <h3 id="petModalTitle">寵物狀態</h3>
       
-      <!-- 養成視圖 -->
       <div id="petManageView">
         <div id="petModalEmoji" style="margin:10px 0;">🥚</div>
         <h4 id="petModalName" style="color:#1e40af; margin-bottom:8px;">神秘的蛋 (第一階段：蛋)</h4>
@@ -413,7 +411,6 @@
         </div>
       </div>
 
-      <!-- 挑選盲盒蛋視圖 -->
       <div id="petSelectView" style="display:none; text-align:left;">
         <p style="font-size:0.9rem; margin-bottom:10px; color:#1e40af; font-weight:700;">請挑選一顆神秘的蛋來孵化：</p>
         <p style="font-size:0.8rem; margin-bottom:15px; color:var(--text-sub);">蛋孵化後（20分）才會揭曉真正的品種喔！</p>
@@ -424,7 +421,6 @@
         </div>
       </div>
 
-      <!-- 寵物園視圖 -->
       <div id="petGardenView" style="display:none; text-align:left;">
         <div class="garden-grid" id="gardenGrid"></div>
       </div>
@@ -531,7 +527,7 @@
       students.forEach((name, i) => { select.add(new Option(`${i + 1}號 ${name}`, `${i + 1}號 ${name}`)); });
     }
 
-    // === 🔄 同步資料 (匯出與匯入) ===
+    // === 🔄 跨裝置同步核心 (萬國碼支援修復) ===
     function exportData() {
       const data = {
         students: JSON.parse(localStorage.getItem('cm309_students') || 'null'),
@@ -542,21 +538,21 @@
         assign: JSON.parse(localStorage.getItem('cm309_cleanAssign') || 'null')
       };
       
+      // 使用穩健的 UTF-8 字串包裝
       const jsonStr = JSON.stringify(data);
-      const encoded = btoa(encodeURIComponent(jsonStr)); // 轉 Base64 避免亂碼
+      const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
       
       const input = document.getElementById('syncDataInput');
       input.value = encoded;
 
-      // 嘗試自動複製
       if(navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(encoded).then(() => {
-          alert("✅ 資料代碼已自動複製！\n請開啟 LINE 傳送給您的手機，接著用手機上的此系統「貼上代碼並匯入」。");
+          alert("✅ 同步代碼已成功複製至剪貼簿！\n請用 LINE 傳送給您的手機，在手機上貼上並點擊「匯入」即可！");
         }).catch(() => {
-          alert("✅ 代碼已產生在下方框框！\n請「全選並複製」裡面的代碼，傳至另一台裝置貼上匯入。");
+          alert("✅ 代碼已產生在下方框框！請點擊框框『全選並複製』裡面的代碼。");
         });
       } else {
-        alert("✅ 代碼已產生在下方框框！\n請「全選並複製」裡面的代碼，傳至另一台裝置貼上匯入。");
+        alert("✅ 代碼已產生在下方框框！請點擊框框『全選並複製』裡面的代碼。");
       }
     }
 
@@ -564,20 +560,39 @@
       const txt = document.getElementById('syncDataInput').value.trim();
       if(!txt) return alert("❌ 請先貼上複製好的代碼！");
       try {
-        const decoded = decodeURIComponent(atob(txt));
+        const decoded = decodeURIComponent(escape(atob(txt)));
         const data = JSON.parse(decoded);
         
-        if(data.students) localStorage.setItem('cm309_students', JSON.stringify(data.students));
+        // 嚴格寫入 LocalStorage
+        if(data.students && Array.isArray(data.students)) localStorage.setItem('cm309_students', JSON.stringify(data.students));
         if(data.pets) localStorage.setItem('cm309_pets', JSON.stringify(data.pets));
         if(data.collection) localStorage.setItem('cm309_pet_collection', JSON.stringify(data.collection));
         if(data.announcements) localStorage.setItem('cm309_announcements', JSON.stringify(data.announcements));
         if(data.sheets) localStorage.setItem('cm309_sheets_url', data.sheets);
         if(data.assign) localStorage.setItem('cm309_cleanAssign', JSON.stringify(data.assign));
         
-        alert("✅ 資料同步匯入成功！系統即將重新整理...");
-        location.reload();
+        // 即時重設內部變數以防快取
+        students = JSON.parse(localStorage.getItem('cm309_students')) || DEFAULT_STUDENTS;
+        petState = JSON.parse(localStorage.getItem('cm309_pets')) || {};
+        petCollection = JSON.parse(localStorage.getItem('cm309_pet_collection')) || {};
+        announcements = JSON.parse(localStorage.getItem('cm309_announcements')) || [];
+        cleanAssignment = JSON.parse(localStorage.getItem('cm309_cleanAssign')) || {};
+        sheetsWebhookUrl = localStorage.getItem('cm309_sheets_url') || "";
+
+        alert("🎉 同步大成功！名單與寵物資料已全部覆蓋更新！");
+        
+        // 重新繪製所有介面
+        renderAllGrids();
+        renderPetsGrid();
+        renderBulletins();
+        renderManageBulletins();
+        document.getElementById('studentRosterInput').value = students.join('\n');
+        document.getElementById('sheetsApiUrlInput').value = sheetsWebhookUrl;
+        updateCloudBadge();
+        
       } catch(e) {
-        alert("❌ 代碼格式錯誤，匯入失敗！請確認有沒有漏掉字元。");
+        console.error(e);
+        alert("❌ 匯入失敗！請確認代碼複製完整（沒有漏掉開頭或結尾字母）。");
       }
     }
 
