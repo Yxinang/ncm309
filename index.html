@@ -310,6 +310,16 @@
 
     <!-- 設定頁面 -->
     <section id="tab-settings" class="page-section">
+      
+      <!-- 【跨裝置資料轉移】 -->
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-mobile-screen-button" style="color:#2563eb;"></i> 跨裝置資料同步 (匯出/匯入)</div>
+        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">將目前裝置的名單、寵物進度與設定匯出，傳至另一台裝置匯入即可無縫接軌！</p>
+        <button class="btn-submit" style="background:#2563eb; margin-bottom:10px;" onclick="exportData()">📦 1. 產生並複製同步代碼</button>
+        <textarea id="syncDataInput" class="form-control" rows="3" placeholder="在另一台裝置貼上複製好的代碼..." style="margin-bottom:10px; font-size:0.75rem; color:#64748b;"></textarea>
+        <button class="btn-submit" style="background:#059669;" onclick="importData()">📥 2. 貼上代碼並匯入覆蓋</button>
+      </div>
+
       <div class="card">
         <div class="card-title"><i class="fa-solid fa-bullhorn text-danger"></i> 公告管理 (新增/刪除)</div>
         <form onsubmit="handleCreateAnnouncement(event)" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:12px;">
@@ -333,7 +343,7 @@
         <button class="btn-submit" style="margin-top:8px; background:#059669;" onclick="saveSheetsUrl()">儲存連結</button>
       </div>
 
-      <!-- 新增：測試後的資料清除按鈕 -->
+      <!-- 進階資料清除 -->
       <div class="card">
         <div class="card-title"><i class="fa-solid fa-triangle-exclamation text-danger"></i> 進階資料清除 (測試後重置)</div>
         <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom:12px;">如果您剛測試完系統，準備正式讓學生使用，可以在這裡一鍵清除寵物測試資料。</p>
@@ -521,6 +531,56 @@
       students.forEach((name, i) => { select.add(new Option(`${i + 1}號 ${name}`, `${i + 1}號 ${name}`)); });
     }
 
+    // === 🔄 同步資料 (匯出與匯入) ===
+    function exportData() {
+      const data = {
+        students: JSON.parse(localStorage.getItem('cm309_students') || 'null'),
+        pets: JSON.parse(localStorage.getItem('cm309_pets') || 'null'),
+        collection: JSON.parse(localStorage.getItem('cm309_pet_collection') || 'null'),
+        announcements: JSON.parse(localStorage.getItem('cm309_announcements') || 'null'),
+        sheets: localStorage.getItem('cm309_sheets_url') || '',
+        assign: JSON.parse(localStorage.getItem('cm309_cleanAssign') || 'null')
+      };
+      
+      const jsonStr = JSON.stringify(data);
+      const encoded = btoa(encodeURIComponent(jsonStr)); // 轉 Base64 避免亂碼
+      
+      const input = document.getElementById('syncDataInput');
+      input.value = encoded;
+
+      // 嘗試自動複製
+      if(navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(encoded).then(() => {
+          alert("✅ 資料代碼已自動複製！\n請開啟 LINE 傳送給您的手機，接著用手機上的此系統「貼上代碼並匯入」。");
+        }).catch(() => {
+          alert("✅ 代碼已產生在下方框框！\n請「全選並複製」裡面的代碼，傳至另一台裝置貼上匯入。");
+        });
+      } else {
+        alert("✅ 代碼已產生在下方框框！\n請「全選並複製」裡面的代碼，傳至另一台裝置貼上匯入。");
+      }
+    }
+
+    function importData() {
+      const txt = document.getElementById('syncDataInput').value.trim();
+      if(!txt) return alert("❌ 請先貼上複製好的代碼！");
+      try {
+        const decoded = decodeURIComponent(atob(txt));
+        const data = JSON.parse(decoded);
+        
+        if(data.students) localStorage.setItem('cm309_students', JSON.stringify(data.students));
+        if(data.pets) localStorage.setItem('cm309_pets', JSON.stringify(data.pets));
+        if(data.collection) localStorage.setItem('cm309_pet_collection', JSON.stringify(data.collection));
+        if(data.announcements) localStorage.setItem('cm309_announcements', JSON.stringify(data.announcements));
+        if(data.sheets) localStorage.setItem('cm309_sheets_url', data.sheets);
+        if(data.assign) localStorage.setItem('cm309_cleanAssign', JSON.stringify(data.assign));
+        
+        alert("✅ 資料同步匯入成功！系統即將重新整理...");
+        location.reload();
+      } catch(e) {
+        alert("❌ 代碼格式錯誤，匯入失敗！請確認有沒有漏掉字元。");
+      }
+    }
+
     // === 🐾 寵物與盲盒系統 ===
     function addPetXp(seat, amount) {
       if (!petState[seat]) return; 
@@ -548,7 +608,6 @@
           const isCompleted = p.stage > 3;
           
           const emoji = isMystery ? '🥚' : cat.stages[Math.min(p.stage - 1, 2)];
-          const petName = isMystery ? '神秘的蛋' : cat.name;
           
           let stageName = isCompleted ? '圓滿成長' : (p.stage===1?'蛋':(p.stage===2?'幼體':'成體'));
           let progressPercent = isCompleted ? 100 : Math.floor((p.xp / PET_REQ[p.stage - 1]) * 100);
@@ -642,13 +701,10 @@
       else { myPets.forEach(petId => { const cat = PET_CATALOG.find(c => c.id === petId); grid.innerHTML += `<div class="garden-item"><div class="emoji">${cat.stages[2]}</div><div class="name">${cat.name}</div></div>`; }); }
     }
 
-    // ⚡ 一鍵重置所有寵物資料 (設定區用)
     function resetAllPets() {
       if(confirm("⚠️ 警告：確定要刪除「全班所有寵物」與「寵物園收藏」嗎？\n(此動作無法復原，適合測試後重新開始！)")) {
-        petState = {};
-        petCollection = {};
-        localStorage.removeItem('cm309_pets');
-        localStorage.removeItem('cm309_pet_collection');
+        petState = {}; petCollection = {};
+        localStorage.removeItem('cm309_pets'); localStorage.removeItem('cm309_pet_collection');
         alert("✅ 全班寵物紀錄已完全清除！");
         if(document.getElementById('tab-pets').classList.contains('active')) renderPetsGrid();
       }
