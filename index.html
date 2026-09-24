@@ -537,13 +537,11 @@
     let petCollection = JSON.parse(localStorage.getItem('cm309_pet_collection')) || {};
     let cleanAssignment = JSON.parse(localStorage.getItem('cm309_cleanAssign')) || {};
 
-    // 💡 訂正看板資料庫：預設兩個作業框
     let correctionBoxes = JSON.parse(localStorage.getItem('cm309_corrBoxes')) || [
       { id: 'box_1', title: '國語甲本', students: [] },
       { id: 'box_2', title: '數學習作', students: [] }
     ];
 
-    // 💡 整潔大師看板資料庫：學生位置與整潔加分紀錄
     let cleanlinessAssignment = JSON.parse(localStorage.getItem('cm309_cleanlinessAssign')) || {};
     let cleanlinessAwarded = JSON.parse(localStorage.getItem('cm309_cleanlinessAwarded')) || {};
 
@@ -768,6 +766,7 @@
       } else if (mode === 'clean') {
         title.textContent = '目前項目：打掃工作';
         kanban.style.display = 'block';
+        renderCleanKanban(); // 💡 關鍵修復：切換到打掃時立即重繪學生名單
       } else {
         title.textContent = (mode === 'teeth' ? '目前項目：潔牙高手' : '目前項目：漱口水');
         grid.style.display = 'grid';
@@ -775,9 +774,8 @@
       renderInteractiveGrid();
     }
 
-    // === 2. 作業訂正專區 (可隨時增減、重複拖曳、不參與加分) ===
+    // === 2. 作業訂正專區 ===
     function renderCorrectionBoard() {
-      // 渲染名單池 (可無限次拖出)
       const pool = document.getElementById('correctionPool');
       pool.innerHTML = '';
       students.forEach((name, i) => {
@@ -796,7 +794,6 @@
         animation: 150
       });
 
-      // 渲染分類框
       const boxesContainer = document.getElementById('correctionBoxesContainer');
       boxesContainer.innerHTML = '';
       correctionBoxes.forEach((box, bIdx) => {
@@ -812,7 +809,6 @@
         boxesContainer.appendChild(col);
 
         const listEl = col.querySelector(`#corr-box-${box.id}`);
-        // 渲染已在裡面的學生
         box.students.forEach((st, sIdx) => {
           const tag = document.createElement('div');
           tag.className = 'drag-tag';
@@ -820,14 +816,13 @@
           listEl.appendChild(tag);
         });
 
-        // 綁定 Sortable
         new Sortable(listEl, {
           group: { name: 'corrGroup', pull: true, put: true },
           animation: 150,
           onAdd: function (evt) {
             const seat = evt.item.getAttribute('data-seat');
             const name = evt.item.getAttribute('data-name');
-            evt.item.remove(); // 移除被拖進來的原生元素，由資料驅動重繪
+            evt.item.remove();
             if (!box.students.some(s => s.seat == seat)) {
               box.students.push({ seat, name });
               renderCorrectionBoard();
@@ -864,7 +859,7 @@
       syncToFirebase();
     }
 
-    // === 3. 整潔大師看板 (加分不扣分) ===
+    // === 3. 整潔大師看板 ===
     function initCleanlinessSortables() {
       const zones = ['cleanlinessPool', 'zone-clean-tidy', 'zone-clean-chair', 'zone-clean-messy', 'zone-clean-bag', 'zone-clean-align'];
       zones.forEach(zId => {
@@ -878,7 +873,6 @@
             const targetZone = evt.to.id;
             cleanlinessAssignment[seat] = targetZone;
 
-            // 💡 只有移入「整潔」框才加 1 分，移出則扣回 1 分；移入其他框不扣分
             if (targetZone === 'zone-clean-tidy') {
               if (!cleanlinessAwarded[seat]) {
                 addPetXp(seat, 1);
@@ -1008,7 +1002,12 @@
     }
 
     function renderCleanKanban() {
-      document.querySelectorAll('.clean-list').forEach(el => el.innerHTML = '');
+      const zones = ['zone-unassigned', 'zone-classroom', 'zone-corridor', 'zone-mop', 'zone-window', 'zone-blackboard', 'zone-trash'];
+      zones.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+      });
+
       students.forEach((name, i) => {
         const id = i+1; const targetZone = cleanAssignment[id] || 'zone-unassigned'; const isLit = !!cleanLampState[id];
         const div = document.createElement('div'); div.className = `student-btn ${isLit ? 'is-lit' : ''}`;
