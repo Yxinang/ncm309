@@ -77,9 +77,18 @@
                     <div class="bg-white/80 p-3.5 rounded-xl border border-amber-100">
                         <p class="text-xs text-slate-800 whitespace-pre-line font-medium leading-relaxed" id="note-display-content">載入中...</p>
                     </div>
+                    
+                    <!-- 老師叮嚀 / 給家長的話 -->
+                    <div class="bg-amber-100/80 p-3 rounded-xl border border-amber-200 space-y-1">
+                        <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                            <i class="fa-solid fa-bullhorn text-amber-600"></i> 老師給家長的話：
+                        </p>
+                        <p class="text-xs text-amber-950 font-medium leading-relaxed pl-4" id="note-display-message">尚無留言</p>
+                    </div>
+
                     <div class="flex items-center gap-2 text-xs text-amber-800 bg-amber-100/60 p-2.5 rounded-lg">
                         <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
-                        <p><span class="font-bold">老師叮嚀：</span><span id="note-display-reminder">載入中...</span></p>
+                        <p><span class="font-bold">叮嚀備註：</span><span id="note-display-reminder">載入中...</span></p>
                     </div>
                 </section>
 
@@ -122,38 +131,37 @@
     </footer>
 
     <script>
-        // 預設資料庫 (若瀏覽器無資料時自動載入)
-        const defaultData = {
-            students: {
-                "30901": {
-                    name: "王小明", seat: "01",
-                    homework: [
-                        { name: "國文習作第 4 課", status: "submitted" },
-                        { name: "數學隨堂練習卷", status: "submitted" },
-                        { name: "社會課本預習", status: "pending" }
-                    ],
-                    injuries: []
-                },
-                "30902": {
-                    name: "李小華", seat: "02",
-                    homework: [
-                        { name: "國文習作第 4 課", status: "submitted" },
-                        { name: "數學隨堂練習卷", status: "pending" },
-                        { name: "社會課本預習", status: "pending" }
-                    ],
-                    injuries: []
-                }
-            },
-            contactNote: {
-                date: "2026 年 11 月 2 日 (星期一)",
-                content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正\n3. 社會課本預習單",
-                reminder: "近期早晚溫差大，請多帶一件外套。"
-            }
-        };
-
         function getSystemData() {
             const data = localStorage.getItem('ncm309_school_data');
             if (!data) {
+                const defaultData = {
+                    students: {
+                        "30901": {
+                            name: "王小明", seat: "01",
+                            homework: [
+                                { name: "國文習作第 4 課", status: "submitted" },
+                                { name: "數學隨堂練習卷", status: "submitted" },
+                                { name: "社會課本預習", status: "pending" }
+                            ],
+                            injuries: []
+                        },
+                        "30902": {
+                            name: "李小華", seat: "02",
+                            homework: [
+                                { name: "國文習作第 4 課", status: "submitted" },
+                                { name: "數學隨堂練習卷", status: "pending" },
+                                { name: "社會課本預習", status: "pending" }
+                            ],
+                            injuries: []
+                        }
+                    },
+                    contactNote: {
+                        date: "2026 年 11 月 2 日 (星期一)",
+                        content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正",
+                        parentMessage: "各位家長好，本週三有戶外教學，請記得幫孩子準備輕便雨衣與水壺。",
+                        reminder: "記得帶外套。"
+                    }
+                };
                 localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
                 return defaultData;
             }
@@ -187,6 +195,7 @@
         function renderDashboard(student, note) {
             document.getElementById('note-display-date').innerText = note.date;
             document.getElementById('note-display-content').innerText = note.content;
+            document.getElementById('note-display-message').innerText = note.parentMessage || "尚無留言";
             document.getElementById('note-display-reminder').innerText = note.reminder;
 
             const hwContainer = document.getElementById('today-homework-list');
