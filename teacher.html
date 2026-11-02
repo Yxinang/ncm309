@@ -6,13 +6,10 @@
     <title>309 班級 - 教師管理後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- 引入 Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
 
-    <!-- 老師登入畫面 -->
+    <!-- 老師登入視窗 -->
     <div id="teacher-login-modal" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-6">
             <div class="text-center space-y-2">
@@ -20,17 +17,17 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800">教師後台身份驗證</h2>
-                <p class="text-xs text-slate-500">請輸入教師專屬帳號與密碼以繼續</p>
+                <p class="text-xs text-slate-500">請輸入教師專屬帳號與密碼</p>
             </div>
 
             <form onsubmit="handleTeacherLogin(event)" class="space-y-4 text-xs">
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">教師帳號</label>
-                    <input type="text" id="teacher-user" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="請輸入帳號">
+                    <input type="text" id="teacher-user" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="預設帳號: teacher309">
                 </div>
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">登入密碼</label>
-                    <input type="password" id="teacher-pass" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="請輸入密碼">
+                    <input type="password" id="teacher-pass" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="預設密碼: 123456">
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition">
                     安全登入後台
@@ -42,7 +39,7 @@
         </div>
     </div>
 
-    <!-- 教師後台主介面 (登入後顯示) -->
+    <!-- 教師後台主介面 (預設隱藏) -->
     <div id="teacher-dashboard" class="hidden flex flex-col min-h-screen">
         <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
             <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -52,7 +49,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-base">三年九班 • 教師管理後台</h1>
-                        <p class="text-xs text-slate-400">雲端即時同步系統</p>
+                        <p class="text-xs text-slate-400">即時管理系統</p>
                     </div>
                 </div>
                 <button onclick="location.reload()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
@@ -62,16 +59,15 @@
         </header>
 
         <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
-            <!-- 分頁按鈕 -->
             <div class="flex bg-slate-200 p-1 rounded-xl max-w-lg mx-auto">
                 <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition">作業點收</button>
                 <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">聯絡簿內容</button>
                 <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">傷病通知</button>
             </div>
 
-            <!-- 1. 作業管理 -->
+            <!-- 作業點收 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表 (勾選即自動儲存至雲端)</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表 (勾選即自動儲存)</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
@@ -87,13 +83,13 @@
                 </div>
             </div>
 
-            <!-- 2. 聯絡簿內容 -->
+            <!-- 聯絡簿內容 -->
             <div id="section-note" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 max-w-lg mx-auto hidden">
                 <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-book text-indigo-600 mr-2"></i>發布今日聯絡簿</h2>
                 <div class="space-y-3 text-xs">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">日期</label>
-                        <input type="text" id="note-date" value="2026 年 11 月 2 日 (星期一)" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                        <input type="text" id="note-date" class="w-full px-3 py-2 rounded-lg border border-slate-300">
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">抄寫內容</label>
@@ -103,11 +99,11 @@
                         <label class="block font-medium text-slate-700 mb-1">老師叮嚀</label>
                         <input type="text" id="note-reminder" class="w-full px-3 py-2 rounded-lg border border-slate-300">
                     </div>
-                    <button onclick="saveContactNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow transition">儲存並同步至雲端</button>
+                    <button onclick="saveContactNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow transition">儲存並更新</button>
                 </div>
             </div>
 
-            <!-- 3. 發送傷病通知 -->
+            <!-- 傷病通知 -->
             <div id="section-injury" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 max-w-lg mx-auto hidden">
                 <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-user-nurse text-rose-600 mr-2"></i>發送傷病通知單</h2>
                 <form onsubmit="submitInjuryNotice(event)" class="space-y-3 text-xs">
@@ -143,22 +139,29 @@
     </div>
 
     <script>
-        // 👉 請替換成您自己的 Firebase 專案設定
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // 🔐 在這裡由您自行設定教師後台的登入帳號與密碼
+        // 🔐 教師登入帳號與密碼（您可以自行修改這裡的文字）
         const TEACHER_ACCOUNT = "teacher309";
-        const TEACHER_PASSWORD = "mysecurepassword";
+        const TEACHER_PASSWORD = "123456";
+
+        function getSystemData() {
+            const data = localStorage.getItem('ncm309_school_data');
+            if (!data) {
+                const defaultData = {
+                    students: {
+                        "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }, { name: "社會課本預習", status: "pending" }], injuries: [] },
+                        "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }, { name: "社會課本預習", status: "pending" }], injuries: [] }
+                    },
+                    contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正", reminder: "記得帶外套。" }
+                };
+                localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
+                return defaultData;
+            }
+            return JSON.parse(data);
+        }
+
+        function saveSystemData(data) {
+            localStorage.setItem('ncm309_school_data', JSON.stringify(data));
+        }
 
         function handleTeacherLogin(event) {
             event.preventDefault();
@@ -170,70 +173,55 @@
                 document.getElementById('teacher-dashboard').classList.remove('hidden');
                 loadTeacherData();
             } else {
-                alert("帳號或密碼錯誤！");
+                alert("帳號或密碼錯誤！\n（預設帳號：teacher309，密碼：123456）");
             }
         }
 
-        async function loadTeacherData() {
-            // 載入作業表格
-            const snapshot = await db.collection("students").get();
+        function loadTeacherData() {
+            const systemData = getSystemData();
             const tbody = document.getElementById('teacher-homework-tbody');
             tbody.innerHTML = '';
 
-            snapshot.forEach(doc => {
-                const id = doc.id;
-                const student = doc.data();
+            Object.keys(systemData.students).forEach(id => {
+                const student = systemData.students[id];
                 let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} - ${student.name}</td>`;
 
-                if (student.homework) {
-                    student.homework.forEach((hw, index) => {
-                        const isChecked = hw.status === 'submitted';
-                        rowHtml += `
-                            <td class="p-3">
-                                <label class="inline-flex items-center cursor-pointer gap-2">
-                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${id}', ${index}, this.checked)" class="w-4 h-4 text-indigo-600 rounded">
-                                    <span class="${isChecked ? 'text-emerald-600 font-medium' : 'text-slate-400'}">${isChecked ? '已交' : '未交'}</span>
-                                </label>
-                            </td>
-                        `;
-                    });
-                }
+                student.homework.forEach((hw, index) => {
+                    const isChecked = hw.status === 'submitted';
+                    rowHtml += `
+                        <td class="p-3">
+                            <label class="inline-flex items-center cursor-pointer gap-2">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${id}', ${index}, this.checked)" class="w-4 h-4 text-indigo-600 rounded">
+                                <span class="${isChecked ? 'text-emerald-600 font-medium' : 'text-slate-400'}">${isChecked ? '已交' : '未交'}</span>
+                            </label>
+                        </td>
+                    `;
+                });
                 rowHtml += `</tr>`;
                 tbody.innerHTML += rowHtml;
             });
 
-            // 載入聯絡簿資料
-            const noteDoc = await db.collection("settings").doc("contactNote").get();
-            if (noteDoc.exists) {
-                const note = noteDoc.data();
-                document.getElementById('note-date').value = note.date || '';
-                document.getElementById('note-content').value = note.content || '';
-                document.getElementById('note-reminder').value = note.reminder || '';
-            }
+            document.getElementById('note-date').value = systemData.contactNote.date;
+            document.getElementById('note-content').value = systemData.contactNote.content;
+            document.getElementById('note-reminder').value = systemData.contactNote.reminder;
         }
 
-        async function toggleHomework(studentId, hwIndex, isChecked) {
-            const docRef = db.collection("students").doc(studentId);
-            const doc = await docRef.get();
-            if (doc.exists) {
-                let homeworks = doc.data().homework;
-                homeworks[hwIndex].status = isChecked ? 'submitted' : 'pending';
-                await docRef.update({ homework: homeworks });
-                loadTeacherData();
-            }
+        function toggleHomework(studentId, hwIndex, isChecked) {
+            const systemData = getSystemData();
+            systemData.students[studentId].homework[hwIndex].status = isChecked ? 'submitted' : 'pending';
+            saveSystemData(systemData);
         }
 
-        async function saveContactNote() {
-            const noteData = {
-                date: document.getElementById('note-date').value,
-                content: document.getElementById('note-content').value,
-                reminder: document.getElementById('note-reminder').value
-            };
-            await db.collection("settings").doc("contactNote").set(noteData);
-            alert("聯絡簿內容已成功同步至雲端！");
+        function saveContactNote() {
+            const systemData = getSystemData();
+            systemData.contactNote.date = document.getElementById('note-date').value;
+            systemData.contactNote.content = document.getElementById('note-content').value;
+            systemData.contactNote.reminder = document.getElementById('note-reminder').value;
+            saveSystemData(systemData);
+            alert("聯絡簿內容已成功更新！");
         }
 
-        async function submitInjuryNotice(event) {
+        function submitInjuryNotice(event) {
             event.preventDefault();
             const studentId = document.getElementById('inj-student-id').value;
             const newInjury = {
@@ -245,14 +233,13 @@
                 nurse: "張護理師"
             };
 
-            const docRef = db.collection("students").doc(studentId);
-            const doc = await docRef.get();
-            if (doc.exists) {
-                let injuries = doc.data().injuries || [];
-                injuries.unshift(newInjury); // 加入最前面
-                await docRef.update({ injuries: injuries });
-                alert("傷病通知單已成功發送至家長端！");
+            const systemData = getSystemData();
+            if (!systemData.students[studentId].injuries) {
+                systemData.students[studentId].injuries = [];
             }
+            systemData.students[studentId].injuries.unshift(newInjury);
+            saveSystemData(systemData);
+            alert("傷病通知單已成功發送！");
         }
 
         function switchTab(tab) {
