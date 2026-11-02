@@ -9,15 +9,15 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
 
-    <!-- 老師登入 / 首次設定視窗 -->
+    <!-- 老師登入視窗 -->
     <div id="teacher-login-modal" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-6">
             <div class="text-center space-y-2">
                 <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl">
-                    <i class="fa-solid fa-lock" id="login-icon"></i>
+                    <i class="fa-solid fa-lock"></i>
                 </div>
-                <h2 class="text-lg font-bold text-slate-800" id="login-title">教師後台登入</h2>
-                <p class="text-xs text-slate-500" id="login-subtitle">請輸入您的教師專屬帳號與密碼</p>
+                <h2 class="text-lg font-bold text-slate-800">教師後台身份驗證</h2>
+                <p class="text-xs text-slate-500">預設帳號：<span class="font-bold text-indigo-600">teacher309</span> / 密碼：<span class="font-bold text-indigo-600">123456</span></p>
             </div>
 
             <form onsubmit="handleTeacherLogin(event)" class="space-y-4 text-xs">
@@ -29,8 +29,8 @@
                     <label class="block font-medium text-slate-700 mb-1">登入密碼</label>
                     <input type="password" id="teacher-pass" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="請輸入密碼">
                 </div>
-                <button type="submit" id="login-btn-text" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition">
-                    登入後台
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition">
+                    安全登入後台
                 </button>
             </form>
             <div class="text-center">
@@ -49,7 +49,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-base">三年九班 • 教師管理後台</h1>
-                        <p class="text-xs text-slate-400">即時管理與同步系統</p>
+                        <p class="text-xs text-slate-400">即時管理系統</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -72,7 +72,7 @@
 
             <!-- 作業點收 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表 (勾選即自動同步至家長端)</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表 (勾選即自動同步)</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
@@ -102,7 +102,7 @@
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">📢 給家長的話 / 老師溫馨提醒</label>
-                        <textarea id="note-parent-message" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-amber-50/50" placeholder="例如：本週三有戶外教學，請記得準備..."></textarea>
+                        <textarea id="note-parent-message" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-amber-50/50"></textarea>
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">叮嚀備註</label>
@@ -170,41 +170,45 @@
 
     <script>
         function getSystemData() {
-            const data = localStorage.getItem('ncm309_school_data');
-            if (!data) {
-                const defaultData = {
-                    students: {
-                        "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }, { name: "社會課本預習", status: "pending" }], injuries: [] },
-                        "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }, { name: "社會課本預習", status: "pending" }], injuries: [] }
-                    },
-                    contactNote: { 
-                        date: "2026 年 11 月 2 日 (星期一)", 
-                        content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正", 
-                        parentMessage: "各位家長好，本週三有戶外教學，請記得幫孩子準備輕便雨衣與水壺。",
-                        reminder: "記得帶外套。" 
-                    },
-                    teacherAuth: { user: "teacher309", pass: "123456" } // 預設帳密
-                };
-                localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
-                return defaultData;
+            try {
+                const data = localStorage.getItem('ncm309_school_data');
+                if (!data) {
+                    return resetDefaultData();
+                }
+                return JSON.parse(data);
+            } catch (e) {
+                console.error("資料讀取錯誤，已自動重設：", e);
+                return resetDefaultData();
             }
-            return JSON.parse(data);
+        }
+
+        function resetDefaultData() {
+            const defaultData = {
+                students: {
+                    "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }, { name: "社會課本預習", status: "pending" }], injuries: [] },
+                    "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }, { name: "社會課本預習", status: "pending" }], injuries: [] }
+                },
+                contactNote: { 
+                    date: "2026 年 11 月 2 日 (星期一)", 
+                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正", 
+                    parentMessage: "各位家長好，本週三有戶外教學，請記得幫孩子準備輕便雨衣與水壺。",
+                    reminder: "記得帶外套。" 
+                },
+                teacherAuth: { user: "teacher309", pass: "123456" }
+            };
+            localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
+            return defaultData;
         }
 
         function saveSystemData(data) {
             localStorage.setItem('ncm309_school_data', JSON.stringify(data));
         }
 
-        // 初始化登入頁面提示
-        window.onload = function() {
-            const systemData = getSystemData();
-            // 如果是第一次使用，提示預設帳密；若已設定過，直接讀取
-        };
-
         function handleTeacherLogin(event) {
             event.preventDefault();
             const user = document.getElementById('teacher-user').value.trim();
             const pass = document.getElementById('teacher-pass').value.trim();
+            
             const systemData = getSystemData();
 
             if (user === systemData.teacherAuth.user && pass === systemData.teacherAuth.pass) {
@@ -212,7 +216,7 @@
                 document.getElementById('teacher-dashboard').classList.remove('hidden');
                 loadTeacherData();
             } else {
-                alert("帳號或密碼錯誤！\n（若為首次登入，預設帳號：teacher309，密碼：123456）");
+                alert("帳號或密碼錯誤！\n（預設帳號：teacher309，密碼：123456）");
             }
         }
 
