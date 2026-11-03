@@ -17,7 +17,7 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800">教師後台登入</h2>
-                <p class="text-xs text-slate-500">預設帳號: nini309 / 密碼: 20010909</p>
+                <p class="text-xs text-slate-500">請輸入您的教師專屬帳號與密碼</p>
             </div>
 
             <div class="space-y-4 text-xs">
@@ -53,7 +53,7 @@
                     </div>
                     <div>
                         <h1 class="font-bold text-base">三年九班 • 教師管理後台</h1>
-                        <p class="text-xs text-slate-400">即時管理系統</p>
+                        <p class="text-xs text-slate-400">作業與傷病狀態追蹤系統</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -69,19 +69,19 @@
 
         <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
             <div class="flex bg-slate-200 p-1 rounded-xl max-w-lg mx-auto">
-                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition">作業點收</button>
+                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition">作業與訂正管理</button>
                 <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">聯絡簿與給家長的話</button>
                 <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">傷病通知與確認狀況</button>
             </div>
 
-            <!-- 作業點收 -->
+            <!-- 作業與訂正管理 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班 25 位學生作業點收表</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（可設定 4 種狀態，自動儲存記錄）</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 border-b">
-                                <th class="p-3">座號 / 學號</th>
+                                <th class="p-3">座號 / 姓名</th>
                                 <th class="p-3">國文習作第 4 課</th>
                                 <th class="p-3">數學隨堂練習卷</th>
                             </tr>
@@ -123,7 +123,7 @@
                         <div>
                             <label class="block font-medium text-slate-700 mb-1">選擇學生</label>
                             <select id="inj-student-id" required class="w-full px-3 py-2 rounded-lg border border-slate-300">
-                                <!-- 動態載入 25 位學生選項 -->
+                                <!-- 動態載入學生選項 -->
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -148,7 +148,6 @@
                     </form>
                 </div>
 
-                <!-- 歷史傷病通知與家長確認狀態列表 -->
                 <div class="border-t pt-4">
                     <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-clipboard-list text-indigo-600 mr-2"></i>已發送之傷病通知與家長確認狀態</h3>
                     <div class="space-y-3" id="teacher-injury-status-list"></div>
@@ -204,6 +203,13 @@
         }
 
         function resetDefaultData() {
+            const names = [
+                "黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", 
+                "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", 
+                "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", 
+                "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", 
+                "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"
+            ];
             const ids = [
                 "113056", "113058", "113164", "113166", "113245", 
                 "113140", "113248", "113010", "113037", "113279", 
@@ -213,17 +219,27 @@
             ];
             let students = {};
             ids.forEach((id, index) => {
-                let seatNum = String(index + 1).padStart(2, '0');
+                let seatNum = String(index + 1);
                 students[id] = {
-                    name: `學生${seatNum}`,
+                    name: names[index],
                     seat: seatNum,
                     homework: [
-                        { name: "國文習作第 4 課", status: "submitted" },
-                        { name: "數學隨堂練習卷", status: "pending" }
+                        { name: "國文習作第 4 課", status: "1" },
+                        { name: "數學隨堂練習卷", status: "3" }
                     ],
                     injuries: []
                 };
             });
+            students["123"] = {
+                name: "測試帳號",
+                seat: "30",
+                homework: [
+                    { name: "國文習作第 4 課", status: "1" },
+                    { name: "數學隨堂練習卷", status: "4" }
+                ],
+                injuries: []
+            };
+
             const defaultData = {
                 students: students,
                 contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
@@ -266,22 +282,22 @@
             tbody.innerHTML = '';
             selectStudent.innerHTML = '';
 
-            // 1. 作業表格與下拉選單
             Object.keys(systemData.students).forEach(id => {
                 const student = systemData.students[id];
                 
-                selectStudent.innerHTML += `<option value="${id}">${student.seat} 號 (學號: ${id})</option>`;
+                selectStudent.innerHTML += `<option value="${id}">${student.seat} 號 - ${student.name} (學號: ${id})</option>`;
 
-                let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} 號 <span class="text-xs text-slate-400">(${id})</span></td>`;
+                let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} 號 - ${student.name} <span class="text-xs text-slate-400">(${id})</span></td>`;
 
                 student.homework.forEach((hw, index) => {
-                    const isChecked = hw.status === 'submitted';
                     rowHtml += `
                         <td class="p-3">
-                            <label class="inline-flex items-center cursor-pointer gap-2">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleHomework('${id}', ${index}, this.checked)" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="${isChecked ? 'text-emerald-600 font-medium' : 'text-slate-400'}">${isChecked ? '已交' : '未交'}</span>
-                            </label>
+                            <select onchange="updateHomework('${id}', ${index}, this.value)" class="px-2 py-1 rounded border border-slate-300 text-xs font-medium">
+                                <option value="1" ${hw.status === '1' ? 'selected' : ''}>1. 繳交</option>
+                                <option value="2" ${hw.status === '2' ? 'selected' : ''}>2. 已補交</option>
+                                <option value="3" ${hw.status === '3' ? 'selected' : ''}>3. 未完成</option>
+                                <option value="4" ${hw.status === '4' ? 'selected' : ''}>4. 需訂正、補交</option>
+                            </select>
                         </td>
                     `;
                 });
@@ -289,13 +305,12 @@
                 tbody.innerHTML += rowHtml;
             });
 
-            // 2. 聯絡簿
             document.getElementById('note-date').value = systemData.contactNote.date;
             document.getElementById('note-content').value = systemData.contactNote.content;
             document.getElementById('note-parent-message').value = systemData.contactNote.parentMessage || "";
             document.getElementById('note-reminder').value = systemData.contactNote.reminder;
 
-            // 3. 傷病通知確認狀態列表
+            // 傷病通知確認狀態
             const injuryStatusList = document.getElementById('teacher-injury-status-list');
             injuryStatusList.innerHTML = '';
             let hasInjury = false;
@@ -309,7 +324,7 @@
                         injuryStatusList.innerHTML += `
                             <div class="p-3 rounded-xl bg-slate-50 border text-xs space-y-1">
                                 <div class="flex justify-between items-center font-bold">
-                                    <span class="text-indigo-700">${student.seat} 號 (學號: ${id}) - (${inj.date} ${inj.time})</span>
+                                    <span class="text-indigo-700">${student.seat} 號 - ${student.name} (${inj.date} ${inj.time})</span>
                                     <span class="px-2 py-0.5 rounded-full font-medium ${isConfirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
                                         <i class="fa-solid ${isConfirmed ? 'fa-circle-check' : 'fa-clock'} mr-1"></i>
                                         ${isConfirmed ? '已確認收到 (' + inj.confirmTime + ')' : '未確認'}
@@ -328,9 +343,9 @@
             }
         }
 
-        function toggleHomework(studentId, hwIndex, isChecked) {
+        function updateHomework(studentId, hwIndex, newStatus) {
             const systemData = getSystemData();
-            systemData.students[studentId].homework[hwIndex].status = isChecked ? 'submitted' : 'pending';
+            systemData.students[studentId].homework[hwIndex].status = newStatus;
             saveSystemData(systemData);
         }
 
