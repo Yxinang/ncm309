@@ -154,6 +154,11 @@
                 if (!parsed.classInfo) {
                     parsed.classInfo = freshData.classInfo;
                 }
+                // 若舊資料中學生人數少於 25 人，自動補回完整 25 人名單
+                if (!parsed.students || Object.keys(parsed.students).length < 25) {
+                    parsed.students = freshData.students;
+                    localStorage.setItem('ncm309_school_data', JSON.stringify(parsed));
+                }
                 return parsed;
             } catch (e) {
                 return freshData;
