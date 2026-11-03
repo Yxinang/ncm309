@@ -17,17 +17,21 @@
                     <i class="fa-solid fa-lock"></i>
                 </div>
                 <h2 class="text-lg font-bold text-slate-800">教師後台登入</h2>
-                <p class="text-xs text-slate-500">請輸入教師專屬帳號與密碼</p>
+                <p class="text-xs text-slate-500">預設帳號: nini309 / 密碼: 20010909</p>
             </div>
 
             <div class="space-y-4 text-xs">
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">教師帳號</label>
-                    <input type="text" id="teacher-user" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" value="teacher309">
+                    <input type="text" id="teacher-user" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="請輸入帳號">
                 </div>
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">登入密碼</label>
-                    <input type="password" id="teacher-pass" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" value="123456">
+                    <input type="password" id="teacher-pass" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="請輸入密碼">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 text-indigo-600 rounded border-slate-300">
+                    <label for="remember-me" class="ml-2 text-slate-600 font-medium">記住我</label>
                 </div>
                 <button onclick="directLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition">
                     立即登入後台
@@ -52,9 +56,14 @@
                         <p class="text-xs text-slate-400">即時管理系統</p>
                     </div>
                 </div>
-                <button onclick="location.reload()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
-                    登出
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="openChangePasswordModal()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-key mr-1"></i> 更改帳密
+                    </button>
+                    <button onclick="location.reload()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
+                        登出
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -62,12 +71,12 @@
             <div class="flex bg-slate-200 p-1 rounded-xl max-w-lg mx-auto">
                 <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition">作業點收</button>
                 <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">聯絡簿與給家長的話</button>
-                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">傷病通知</button>
+                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">傷病通知與確認狀況</button>
             </div>
 
             <!-- 作業點收 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表 (勾選即自動同步)</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業點收表</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
@@ -75,7 +84,6 @@
                                 <th class="p-3">座號 / 姓名</th>
                                 <th class="p-3">國文習作第 4 課</th>
                                 <th class="p-3">數學隨堂練習卷</th>
-                                <th class="p-3">社會課本預習</th>
                             </tr>
                         </thead>
                         <tbody id="teacher-homework-tbody" class="divide-y divide-slate-100"></tbody>
@@ -107,45 +115,78 @@
                 </div>
             </div>
 
-            <!-- 傷病通知 -->
-            <div id="section-injury" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 max-w-lg mx-auto hidden">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-user-nurse text-rose-600 mr-2"></i>發送傷病通知單</h2>
-                <form onsubmit="submitInjuryNotice(event)" class="space-y-3 text-xs">
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">選擇學生</label>
-                        <select id="inj-student-id" required class="w-full px-3 py-2 rounded-lg border border-slate-300">
-                            <option value="30901">30901 - 王小明</option>
-                            <option value="30902">30902 - 李小華</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
+            <!-- 傷病通知發送與狀態查詢 -->
+            <div id="section-injury" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-6 max-w-2xl mx-auto hidden">
+                <div>
+                    <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-user-nurse text-rose-600 mr-2"></i>發送傷病通知單</h2>
+                    <form onsubmit="submitInjuryNotice(event)" class="space-y-3 text-xs mt-3">
                         <div>
-                            <label class="block font-medium text-slate-700 mb-1">發生時間</label>
-                            <input type="text" id="inj-time" required value="上午 10:15" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                            <label class="block font-medium text-slate-700 mb-1">選擇學生</label>
+                            <select id="inj-student-id" required class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                                <option value="30901">30901 - 王小明</option>
+                                <option value="30902">30902 - 李小華</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-medium text-slate-700 mb-1">發生時間</label>
+                                <input type="text" id="inj-time" required value="上午 10:15" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                            </div>
+                            <div>
+                                <label class="block font-medium text-slate-700 mb-1">發生地點</label>
+                                <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                            </div>
                         </div>
                         <div>
-                            <label class="block font-medium text-slate-700 mb-1">發生地點</label>
-                            <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                            <label class="block font-medium text-slate-700 mb-1">受傷症狀</label>
+                            <input type="text" id="inj-symptom" required value="右膝擦傷" class="w-full px-3 py-2 rounded-lg border border-slate-300">
                         </div>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">受傷症狀</label>
-                        <input type="text" id="inj-symptom" required value="右膝擦傷" class="w-full px-3 py-2 rounded-lg border border-slate-300">
-                    </div>
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">處理經過</label>
-                        <textarea id="inj-treatment" rows="3" required class="w-full px-3 py-2 rounded-lg border border-slate-300">生理食鹽水清洗，擦優碘貼人工皮。</textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl shadow transition">發送通知單</button>
-                </form>
+                        <div>
+                            <label class="block font-medium text-slate-700 mb-1">處理經過</label>
+                            <textarea id="inj-treatment" rows="2" required class="w-full px-3 py-2 rounded-lg border border-slate-300">生理食鹽水清洗，擦優碘貼人工皮。</textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl shadow transition">發送通知單</button>
+                    </form>
+                </div>
+
+                <!-- 歷史傷病通知與家長確認狀態列表 -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-clipboard-list text-indigo-600 mr-2"></i>已發送之傷病通知與家長確認狀態</h3>
+                    <div class="space-y-3" id="teacher-injury-status-list"></div>
+                </div>
             </div>
         </main>
     </div>
 
+    <!-- 更改密碼彈跳視窗 -->
+    <div id="password-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6 space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm text-slate-800"><i class="fa-solid fa-key text-indigo-600 mr-1"></i> 更改教師後台帳號密碼</h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">新帳號</label>
+                    <input type="text" id="new-user" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">新密碼</label>
+                    <input type="password" id="new-pass" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                </div>
+                <button onclick="saveNewCredentials()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow transition">確認修改</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 🔐 直接在這裡設定您要的帳號與密碼
-        const CORRECT_USER = "teacher309";
-        const CORRECT_PASS = "123456";
+        window.onload = function() {
+            const rememberedUser = localStorage.getItem('ncm309_remembered_user');
+            if (rememberedUser) {
+                document.getElementById('teacher-user').value = rememberedUser;
+                document.getElementById('remember-me').checked = true;
+            }
+        };
 
         function getSystemData() {
             let data = localStorage.getItem('ncm309_school_data');
@@ -153,7 +194,11 @@
                 return resetDefaultData();
             }
             try {
-                return JSON.parse(data);
+                let parsed = JSON.parse(data);
+                if (!parsed.teacherAuth) {
+                    parsed.teacherAuth = { user: "nini309", pass: "20010909" };
+                }
+                return parsed;
             } catch (e) {
                 return resetDefaultData();
             }
@@ -162,15 +207,12 @@
         function resetDefaultData() {
             const defaultData = {
                 students: {
-                    "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }, { name: "社會課本預習", status: "pending" }], injuries: [] },
-                    "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }, { name: "社會課本預習", status: "pending" }], injuries: [] }
+                    "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }], injuries: [] },
+                    "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }], injuries: [] }
                 },
-                contactNote: { 
-                    date: "2026 年 11 月 2 日 (星期一)", 
-                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正", 
-                    parentMessage: "各位家長好，本週三有戶外教學，請記得幫孩子準備輕便雨衣與水壺。",
-                    reminder: "記得帶外套。" 
-                }
+                contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
+                historyNotes: [],
+                teacherAuth: { user: "nini309", pass: "20010909" }
             };
             localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
             return defaultData;
@@ -183,13 +225,21 @@
         function directLogin() {
             const user = document.getElementById('teacher-user').value.trim();
             const pass = document.getElementById('teacher-pass').value.trim();
+            const rememberMe = document.getElementById('remember-me').checked;
+            const systemData = getSystemData();
 
-            if (user === CORRECT_USER && pass === CORRECT_PASS) {
+            if (user === systemData.teacherAuth.user && pass === systemData.teacherAuth.pass) {
+                if (rememberMe) {
+                    localStorage.setItem('ncm309_remembered_user', user);
+                } else {
+                    localStorage.removeItem('ncm309_remembered_user');
+                }
+
                 document.getElementById('teacher-login-modal').classList.add('hidden');
                 document.getElementById('teacher-dashboard').classList.remove('hidden');
                 loadTeacherData();
             } else {
-                alert("帳號或密碼錯誤！請輸入預設帳號 teacher309 與密碼 123456");
+                alert("帳號或密碼錯誤！");
             }
         }
 
@@ -198,6 +248,7 @@
             const tbody = document.getElementById('teacher-homework-tbody');
             tbody.innerHTML = '';
 
+            // 1. 作業表格
             Object.keys(systemData.students).forEach(id => {
                 const student = systemData.students[id];
                 let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} - ${student.name}</td>`;
@@ -217,10 +268,43 @@
                 tbody.innerHTML += rowHtml;
             });
 
+            // 2. 聯絡簿
             document.getElementById('note-date').value = systemData.contactNote.date;
             document.getElementById('note-content').value = systemData.contactNote.content;
             document.getElementById('note-parent-message').value = systemData.contactNote.parentMessage || "";
             document.getElementById('note-reminder').value = systemData.contactNote.reminder;
+
+            // 3. 傷病通知確認狀態列表
+            const injuryStatusList = document.getElementById('teacher-injury-status-list');
+            injuryStatusList.innerHTML = '';
+            let hasInjury = false;
+
+            Object.keys(systemData.students).forEach(id => {
+                const student = systemData.students[id];
+                if (student.injuries && student.injuries.length > 0) {
+                    student.injuries.forEach(inj => {
+                        hasInjury = true;
+                        const isConfirmed = inj.confirmed === true;
+                        injuryStatusList.innerHTML += `
+                            <div class="p-3 rounded-xl bg-slate-50 border text-xs space-y-1">
+                                <div class="flex justify-between items-center font-bold">
+                                    <span class="text-indigo-700">${student.seat} 號 - ${student.name} (${inj.date} ${inj.time})</span>
+                                    <span class="px-2 py-0.5 rounded-full font-medium ${isConfirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                        <i class="fa-solid ${isConfirmed ? 'fa-circle-check' : 'fa-clock'} mr-1"></i>
+                                        ${isConfirmed ? '已確認收到 (' + inj.confirmTime + ')' : '未確認'}
+                                    </span>
+                                </div>
+                                <p class="text-slate-700">狀況：${inj.symptom} | 地點：${inj.location}</p>
+                                <p class="text-slate-500">處置：${inj.treatment}</p>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            if (!hasInjury) {
+                injuryStatusList.innerHTML = `<p class="text-center text-xs text-slate-400 py-2">目前沒有發送任何傷病通知單</p>`;
+            }
         }
 
         function toggleHomework(studentId, hwIndex, isChecked) {
@@ -231,12 +315,22 @@
 
         function saveContactNote() {
             const systemData = getSystemData();
+            if (systemData.contactNote && systemData.contactNote.content) {
+                if (!systemData.historyNotes) systemData.historyNotes = [];
+                systemData.historyNotes.unshift({
+                    date: systemData.contactNote.date,
+                    content: systemData.contactNote.content,
+                    parentMessage: systemData.contactNote.parentMessage
+                });
+            }
+
             systemData.contactNote.date = document.getElementById('note-date').value;
             systemData.contactNote.content = document.getElementById('note-content').value;
             systemData.contactNote.parentMessage = document.getElementById('note-parent-message').value;
             systemData.contactNote.reminder = document.getElementById('note-reminder').value;
+            
             saveSystemData(systemData);
-            alert("聯絡簿與給家長的話已成功同步至家長端！");
+            alert("聯絡簿已成功儲存並留存歷史紀錄！");
         }
 
         function submitInjuryNotice(event) {
@@ -248,7 +342,9 @@
                 location: document.getElementById('inj-location').value,
                 symptom: document.getElementById('inj-symptom').value,
                 treatment: document.getElementById('inj-treatment').value,
-                nurse: "張護理師"
+                nurse: "張護理師",
+                confirmed: false,       // 預設為未確認
+                confirmTime: null
             };
 
             const systemData = getSystemData();
@@ -258,6 +354,33 @@
             systemData.students[studentId].injuries.unshift(newInjury);
             saveSystemData(systemData);
             alert("傷病通知單已成功發送！");
+            loadTeacherData();
+        }
+
+        function openChangePasswordModal() {
+            const systemData = getSystemData();
+            document.getElementById('new-user').value = systemData.teacherAuth.user;
+            document.getElementById('new-pass').value = systemData.teacherAuth.pass;
+            document.getElementById('password-modal').classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+        }
+
+        function saveNewCredentials() {
+            const newUser = document.getElementById('new-user').value.trim();
+            const newPass = document.getElementById('new-pass').value.trim();
+            if (!newUser || !newPass) {
+                alert("帳號與密碼不得為空白！");
+                return;
+            }
+            const systemData = getSystemData();
+            systemData.teacherAuth.user = newUser;
+            systemData.teacherAuth.pass = newPass;
+            saveSystemData(systemData);
+            alert("教師帳號密碼已成功更新！");
+            closeChangePasswordModal();
         }
 
         function switchTab(tab) {
