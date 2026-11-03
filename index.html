@@ -78,7 +78,6 @@
                         <p class="text-xs text-slate-800 whitespace-pre-line font-medium leading-relaxed" id="note-display-content">載入中...</p>
                     </div>
                     
-                    <!-- 老師叮嚀 / 給家長的話 -->
                     <div class="bg-amber-100/80 p-3 rounded-xl border border-amber-200 space-y-1">
                         <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
                             <i class="fa-solid fa-bullhorn text-amber-600"></i> 老師給家長的話：
@@ -103,7 +102,7 @@
                     <div class="space-y-2.5" id="today-homework-list"></div>
                 </section>
 
-                <!-- 傷病通知 -->
+                <!-- 傷病通知（含家長確認按鈕） -->
                 <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
@@ -115,10 +114,11 @@
                 </section>
             </div>
 
+            <!-- 所有歷史紀錄 -->
             <div id="view-history" class="space-y-6 hidden">
                 <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-3">
                     <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2 border-b pb-2">
-                        <i class="fa-solid fa-box-archive text-indigo-500"></i> 過往傷病紀錄總覽
+                        <i class="fa-solid fa-box-archive text-indigo-500"></i> 歷史聯絡簿與傷病紀錄總覽
                     </h2>
                     <div class="space-y-3" id="all-history-list"></div>
                 </section>
@@ -136,36 +136,21 @@
             if (!data) {
                 const defaultData = {
                     students: {
-                        "30901": {
-                            name: "王小明", seat: "01",
-                            homework: [
-                                { name: "國文習作第 4 課", status: "submitted" },
-                                { name: "數學隨堂練習卷", status: "submitted" },
-                                { name: "社會課本預習", status: "pending" }
-                            ],
-                            injuries: []
-                        },
-                        "30902": {
-                            name: "李小華", seat: "02",
-                            homework: [
-                                { name: "國文習作第 4 課", status: "submitted" },
-                                { name: "數學隨堂練習卷", status: "pending" },
-                                { name: "社會課本預習", status: "pending" }
-                            ],
-                            injuries: []
-                        }
+                        "30901": { name: "王小明", seat: "01", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "submitted" }], injuries: [] },
+                        "30902": { name: "李小華", seat: "02", homework: [{ name: "國文習作第 4 課", status: "submitted" }, { name: "數學隨堂練習卷", status: "pending" }], injuries: [] }
                     },
-                    contactNote: {
-                        date: "2026 年 11 月 2 日 (星期一)",
-                        content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷訂正",
-                        parentMessage: "各位家長好，本週三有戶外教學，請記得幫孩子準備輕便雨衣與水壺。",
-                        reminder: "記得帶外套。"
-                    }
+                    contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
+                    historyNotes: [],
+                    teacherAuth: { user: "nini309", pass: "20010909" }
                 };
                 localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
                 return defaultData;
             }
             return JSON.parse(data);
+        }
+
+        function saveSystemData(data) {
+            localStorage.setItem('ncm309_school_data', JSON.stringify(data));
         }
 
         let currentStudentId = null;
@@ -182,22 +167,24 @@
                 document.getElementById('header-child-name').innerText = student.name;
                 document.getElementById('header-child-info').innerText = `座號 ${student.seat} 號`;
 
-                renderDashboard(student, systemData.contactNote);
+                renderDashboard(student, systemData);
 
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('app-header').classList.remove('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
             } else {
-                alert("找不到此學號！請確認輸入是否正確（測試可輸入：30901 或 30902）。");
+                alert("找不到此學號！測試請輸入：30901 或 30902。");
             }
         }
 
-        function renderDashboard(student, note) {
+        function renderDashboard(student, systemData) {
+            const note = systemData.contactNote;
             document.getElementById('note-display-date').innerText = note.date;
             document.getElementById('note-display-content').innerText = note.content;
             document.getElementById('note-display-message').innerText = note.parentMessage || "尚無留言";
             document.getElementById('note-display-reminder').innerText = note.reminder;
 
+            // 作業
             const hwContainer = document.getElementById('today-homework-list');
             hwContainer.innerHTML = '';
             let submittedCount = 0;
@@ -215,32 +202,61 @@
             });
             document.getElementById('homework-summary').innerText = `${submittedCount} / ${student.homework.length} 已交`;
 
+            // 傷病通知與家長確認按鈕
             const injuryContainer = document.getElementById('today-injury-list');
-            const historyContainer = document.getElementById('all-history-list');
             injuryContainer.innerHTML = '';
-            historyContainer.innerHTML = '';
             document.getElementById('today-injury-count').innerText = `${student.injuries.length} 筆`;
 
             if (student.injuries.length === 0) {
                 injuryContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">近期無傷病通知紀錄 🎉</p>`;
-                historyContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">無過往歷史紀錄</p>`;
             } else {
-                student.injuries.forEach(inj => {
+                student.injuries.forEach((inj, index) => {
+                    const isConfirmed = inj.confirmed === true;
                     injuryContainer.innerHTML += `
-                        <div class="p-3 rounded-xl bg-rose-50 border border-rose-100 text-xs space-y-1">
-                            <p class="font-bold text-rose-600">${inj.date} ${inj.time} - ${inj.symptom}</p>
-                            <p class="text-slate-600">地點：${inj.location}</p>
-                            <p class="text-slate-700 bg-white p-2 rounded border border-rose-100">處置：${inj.treatment}</p>
-                        </div>
-                    `;
-                    historyContainer.innerHTML += `
-                        <div class="p-3 rounded-xl bg-slate-50 border text-xs space-y-1">
-                            <span class="font-bold text-indigo-600">${inj.date} 傷病紀錄</span>
-                            <p class="text-slate-700">${inj.symptom} (${inj.treatment})</p>
+                        <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-100 text-xs space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-rose-600">${inj.date} ${inj.time}</span>
+                                <span class="text-slate-500">處理：${inj.nurse}</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">狀況：${inj.symptom}</p>
+                                <p class="text-slate-600 mt-0.5">地點：${inj.location}</p>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-rose-100 text-slate-700">
+                                <p class="font-semibold text-rose-700">處理經過：</p>
+                                <p>${inj.treatment}</p>
+                            </div>
+                            <div class="pt-2 border-t border-rose-200 flex justify-between items-center">
+                                <span class="text-[11px] ${isConfirmed ? 'text-emerald-600 font-bold' : 'text-amber-600'}">
+                                    <i class="fa-solid ${isConfirmed ? 'fa-circle-check' : 'fa-clock'} mr-1"></i>
+                                    ${isConfirmed ? '已於 ' + inj.confirmTime + ' 確認收到' : '尚未確認收到'}
+                                </span>
+                                ${!isConfirmed ? `
+                                    <button onclick="confirmInjury(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg shadow transition text-[11px]">
+                                        確認已收到訊息
+                                    </button>
+                                ` : `
+                                    <span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold text-[11px]">已完成確認</span>
+                                `}
+                            </div>
                         </div>
                     `;
                 });
             }
+        }
+
+        // 家長點擊確認收到傷病通知
+        function confirmInjury(injuryIndex) {
+            const systemData = getSystemData();
+            const now = new Date();
+            const timeString = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            systemData.students[currentStudentId].injuries[injuryIndex].confirmed = true;
+            systemData.students[currentStudentId].injuries[injuryIndex].confirmTime = timeString;
+            
+            saveSystemData(systemData);
+            alert("已成功回報學校：確認收到傷病通知！");
+            renderDashboard(systemData.students[currentStudentId], systemData);
         }
 
         function switchTab(tab) {
