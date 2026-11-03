@@ -123,7 +123,7 @@
                     </div>
                 </div>
 
-                <!-- 歷史聯絡簿完整列表（老師可隨時查閱與修改過去幾天） -->
+                <!-- 歷史聯絡簿完整列表 -->
                 <div class="space-y-3 border-t pt-4">
                     <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-box-archive text-indigo-600 mr-2"></i>歷史聯絡簿紀錄總覽（點擊可直接修改）</h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="teacher-history-notes-list"></div>
@@ -243,7 +243,7 @@
     </div>
 
     <script>
-        let editingNoteIndex = 'current'; // 記錄目前正在編輯的是當前聯絡簿還是歷史索引
+        let editingNoteIndex = 'current';
 
         window.onload = function() {
             const savedUser = localStorage.getItem('ncm309_remembered_user');
@@ -408,10 +408,8 @@
                 `;
             });
 
-            // 載入聯絡簿與歷史列表
             loadTeacherNotesManager();
 
-            // 傷病通知確認狀態
             const injuryStatusList = document.getElementById('teacher-injury-status-list');
             injuryStatusList.innerHTML = '';
             let hasInjury = false;
@@ -449,24 +447,30 @@
             const listContainer = document.getElementById('teacher-history-notes-list');
             listContainer.innerHTML = '';
 
-            // 1. 顯示當前聯絡簿
+            // 修正這裡：確保顯示乾淨的單一括號格式
+            const cleanDateStr = (dateStr) => {
+                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
+            };
+
+            const curDate = cleanDateStr(systemData.contactNote.date);
+
             listContainer.innerHTML += `
                 <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-2">
                     <div class="flex justify-between items-center font-bold text-amber-900">
-                        <span>📅 當前聯絡簿：${systemData.contactNote.date}</span>
+                        <span>📅 當前聯絡簿 (${curDate})</span>
                         <button onclick="editNote('current')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-[11px] shadow transition">編輯 / 修改</button>
                     </div>
                     <p class="text-slate-700 whitespace-pre-line">${systemData.contactNote.content}</p>
                 </div>
             `;
 
-            // 2. 顯示所有歷史聯絡簿
             if (systemData.historyNotes && systemData.historyNotes.length > 0) {
                 systemData.historyNotes.forEach((hn, index) => {
+                    const hDate = cleanDateStr(hn.date);
                     listContainer.innerHTML += `
                         <div class="p-3 rounded-xl bg-slate-50 border text-xs space-y-2">
                             <div class="flex justify-between items-center font-bold text-slate-700">
-                                <span>📜 歷史聯絡簿：${hn.date}</span>
+                                <span>📜 歷史聯絡簿 (${hDate})</span>
                                 <button onclick="editNote(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-[11px] shadow transition">編輯 / 修改</button>
                             </div>
                             <p class="text-slate-600 whitespace-pre-line">${hn.content}</p>
@@ -477,7 +481,6 @@
                 listContainer.innerHTML += `<p class="text-center text-xs text-slate-400 py-2">尚無其他歷史聯絡簿紀錄</p>`;
             }
 
-            // 預設將編輯器載入當前聯絡簿
             editNote('current');
         }
 
@@ -492,7 +495,11 @@
                 note = systemData.historyNotes[target];
             }
 
-            document.getElementById('note-date').value = note.date;
+            const cleanDateStr = (dateStr) => {
+                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
+            };
+
+            document.getElementById('note-date').value = cleanDateStr(note.date);
             document.getElementById('note-content').value = note.content;
             document.getElementById('note-parent-message').value = note.parentMessage || "";
             document.getElementById('note-reminder').value = note.reminder || "";
@@ -501,7 +508,7 @@
         function prepareNewNote() {
             editingNoteIndex = 'current';
             const now = new Date();
-            document.getElementById('note-date').value = `民國 115 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日`;
+            document.getElementById('note-date').value = `民國 115 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 (星期三)`;
             document.getElementById('note-content').value = "";
             document.getElementById('note-parent-message').value = "";
             document.getElementById('note-reminder').value = "";
@@ -516,8 +523,13 @@
 
         function saveContactNote() {
             const systemData = getSystemData();
+            
+            const cleanDateStr = (dateStr) => {
+                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
+            };
+
             const updatedNote = {
-                date: document.getElementById('note-date').value,
+                date: cleanDateStr(document.getElementById('note-date').value),
                 content: document.getElementById('note-content').value,
                 parentMessage: document.getElementById('note-parent-message').value,
                 reminder: document.getElementById('note-reminder').value
