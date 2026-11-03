@@ -95,7 +95,7 @@
                 <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-indigo-500"></i> 我的作業繳交與訂正狀況
+                            <i class="fa-solid fa-list-check text-indigo-500"></i> 作業繳交與訂正狀況（依據前一日聯絡簿內容）
                         </h2>
                         <span class="text-xs text-indigo-600 font-bold" id="homework-summary">0 筆</span>
                     </div>
@@ -163,25 +163,26 @@
                     name: names[index],
                     seat: seatNum,
                     homework: [
-                        { name: "國文習作第 4 課", status: "1" }, // 1.繳交
-                        { name: "數學隨堂練習卷", status: "3" }  // 3.未完成
+                        { name: "國文習作第 4 課", status: "1" },
+                        { name: "數學隨堂練習卷", status: "3" }
                     ],
                     injuries: []
                 };
             });
+            // 測試帳號
             students["123"] = {
                 name: "測試帳號",
                 seat: "30",
                 homework: [
                     { name: "國文習作第 4 課", status: "1" },
-                    { name: "數學隨堂練習卷", status: "4" } // 4.需訂正、補交
+                    { name: "數學隨堂練習卷", status: "4" }
                 ],
                 injuries: []
             };
 
             return {
                 students: students,
-                contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
+                contactNote: { date: "民國 115 年 11 月 3 日 (星期二)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
                 historyNotes: [],
                 teacherAuth: { user: "nini309", pass: "20010909" }
             };
@@ -240,7 +241,6 @@
             });
             document.getElementById('homework-summary').innerText = `${student.homework.length} 項作業`;
 
-            // 傷病通知
             const injuryContainer = document.getElementById('today-injury-list');
             const historyContainer = document.getElementById('all-history-list');
             injuryContainer.innerHTML = '';
