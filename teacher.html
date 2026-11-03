@@ -76,7 +76,7 @@
 
             <!-- 作業與訂正管理 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（可設定 4 種狀態，自動儲存記錄）</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（對應前一日聯絡簿內容）</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
@@ -96,11 +96,11 @@
                 <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-book text-indigo-600 mr-2"></i>發布今日聯絡簿與給家長的話</h2>
                 <div class="space-y-3 text-xs">
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">日期</label>
-                        <input type="text" id="note-date" class="w-full px-3 py-2 rounded-lg border border-slate-300">
+                        <label class="block font-medium text-slate-700 mb-1">日期（民國年月日與星期）</label>
+                        <input type="text" id="note-date" class="w-full px-3 py-2 rounded-lg border border-slate-300" placeholder="例如：民國 115 年 11 月 3 日 (星期二)">
                     </div>
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">聯絡簿抄寫內容</label>
+                        <label class="block font-medium text-slate-700 mb-1">聯絡簿抄寫內容（前一天作業登記內容）</label>
                         <textarea id="note-content" rows="4" class="w-full px-3 py-2 rounded-lg border border-slate-300"></textarea>
                     </div>
                     <div>
@@ -242,7 +242,7 @@
 
             const defaultData = {
                 students: students,
-                contactNote: { date: "2026 年 11 月 2 日 (星期一)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
+                contactNote: { date: "民國 115 年 11 月 3 日 (星期二)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
                 historyNotes: [],
                 teacherAuth: { user: "nini309", pass: "20010909" }
             };
@@ -310,7 +310,6 @@
             document.getElementById('note-parent-message').value = systemData.contactNote.parentMessage || "";
             document.getElementById('note-reminder').value = systemData.contactNote.reminder;
 
-            // 傷病通知確認狀態
             const injuryStatusList = document.getElementById('teacher-injury-status-list');
             injuryStatusList.innerHTML = '';
             let hasInjury = false;
@@ -373,7 +372,7 @@
             event.preventDefault();
             const studentId = document.getElementById('inj-student-id').value;
             const newInjury = {
-                date: "2026-11-02",
+                date: "民國 115 年 11 月 3 日",
                 time: document.getElementById('inj-time').value,
                 location: document.getElementById('inj-location').value,
                 symptom: document.getElementById('inj-symptom').value,
