@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>309 班級 - 家長即時守護系統</title>
+    <title>班級 - 家長即時守護系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -17,7 +17,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base" id="header-child-name">載入中...</h1>
-                    <p class="text-xs text-indigo-200" id="header-child-info">三年九班</p>
+                    <p class="text-xs text-indigo-200" id="header-className-display">班級載入中...</p>
                 </div>
             </div>
             <button onclick="logout()" class="text-xs text-white bg-indigo-500 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
@@ -34,7 +34,7 @@
                 <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
                     <i class="fa-solid fa-school"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-800">三年九班親師生聯絡平台</h2>
+                <h2 class="text-xl font-bold text-slate-800" id="login-title-display">親師生聯絡平台</h2>
                 <p class="text-xs text-slate-500">請輸入學生學號</p>
             </div>
 
@@ -49,7 +49,7 @@
             </form>
 
             <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                <span>崇明國小三年九班</span>
+                <span id="login-footer-school">崇明國小</span>
                 <a href="teacher.html" class="text-indigo-600 hover:underline font-medium"><i class="fa-solid fa-lock mr-1"></i>教師後台登入</a>
             </div>
         </section>
@@ -79,7 +79,7 @@
                     </div>
                     
                     <div class="bg-amber-100/80 p-3 rounded-xl border border-amber-200 space-y-1">
-                        <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+                        <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1" id="note-teacher-label">
                             <i class="fa-solid fa-bullhorn text-amber-600"></i> 老師給家長的話：
                         </p>
                         <p class="text-xs text-amber-950 font-medium leading-relaxed pl-4" id="note-display-message">尚無留言</p>
@@ -95,7 +95,7 @@
                 <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-indigo-500"></i> 作業繳交與訂正狀況（依據前一日聯絡簿內容）
+                            <i class="fa-solid fa-list-check text-indigo-500"></i> 作業繳交與訂正狀況
                         </h2>
                         <span class="text-xs text-indigo-600 font-bold" id="homework-summary">0 筆</span>
                     </div>
@@ -127,10 +127,19 @@
     </main>
 
     <footer class="py-3 text-center text-xs text-slate-400">
-        <p>崇明國小三年九班 • 隨時守護孩子安全</p>
+        <p id="footer-school-name">崇明國小 • 隨時守護孩子安全</p>
     </footer>
 
     <script>
+        window.onload = function() {
+            const systemData = getSystemData();
+            if (systemData.classInfo) {
+                document.getElementById('login-title-display').innerText = `${systemData.classInfo.className}親師生聯絡平台`;
+                document.getElementById('login-footer-school').innerText = systemData.classInfo.schoolName;
+                document.getElementById('footer-school-name').innerText = `${systemData.classInfo.schoolName} • 隨時守護孩子安全`;
+            }
+        };
+
         function getSystemData() {
             let data = localStorage.getItem('ncm309_school_data');
             const freshData = generateDefaultData();
@@ -142,8 +151,9 @@
 
             try {
                 let parsed = JSON.parse(data);
-                // 強制確保學號名單完整更新，不會被舊的快取覆蓋
-                parsed.students = freshData.students;
+                if (!parsed.classInfo) {
+                    parsed.classInfo = freshData.classInfo;
+                }
                 return parsed;
             } catch (e) {
                 return freshData;
@@ -178,7 +188,6 @@
                     injuries: []
                 };
             });
-            // 測試帳號
             students["123"] = {
                 name: "測試帳號",
                 seat: "30",
@@ -191,6 +200,7 @@
 
             return {
                 students: students,
+                classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
                 contactNote: { date: "民國 115 年 11 月 3 日 (星期二)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
                 historyNotes: [],
                 teacherAuth: { user: "nini309", pass: "20010909" }
@@ -207,9 +217,11 @@
             if (systemData.students[studentId]) {
                 currentStudentId = studentId;
                 const student = systemData.students[studentId];
+                const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
 
                 document.getElementById('header-child-name').innerText = student.name;
-                document.getElementById('header-child-info').innerText = `三年九班 • 座號 ${student.seat} 號`;
+                document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
+                document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-bullhorn text-amber-600"></i> ${cInfo.teacherName}老師給家長的話：`;
 
                 renderDashboard(student, systemData);
 
