@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>309 班級 - 教師管理後台</title>
+    <title>班級 - 教師管理後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex flex-col min-h-screen">
 
-    <!-- 老師登入視窗 -->
+    <!-- 老師登入視窗（自動載入記住的帳號密碼） -->
     <div id="teacher-login-modal" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-6">
             <div class="text-center space-y-2">
@@ -31,7 +31,7 @@
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="remember-me" class="w-4 h-4 text-indigo-600 rounded border-slate-300">
-                    <label for="remember-me" class="ml-2 text-slate-600 font-medium">記住我</label>
+                    <label for="remember-me" class="ml-2 text-slate-600 font-medium">記住我 (同時記住帳號與密碼)</label>
                 </div>
                 <button onclick="directLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition">
                     立即登入後台
@@ -52,7 +52,7 @@
                         <i class="fa-solid fa-chalkboard-user text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-base">三年九班 • 教師管理後台</h1>
+                        <h1 class="font-bold text-base" id="teacher-header-title">班級 • 教師管理後台</h1>
                         <p class="text-xs text-slate-400">作業與傷病狀態追蹤系統</p>
                     </div>
                 </div>
@@ -68,16 +68,16 @@
         </header>
 
         <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
-            <div class="flex bg-slate-200 p-1 rounded-xl max-w-xl mx-auto">
-                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition">作業與訂正管理</button>
-                <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">聯絡簿與給家長的話</button>
-                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">傷病通知</button>
-                <button onclick="switchTab('roster')" id="tab-ros" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition">學生名單一覽</button>
+            <div class="flex bg-slate-200 p-1 rounded-xl max-w-2xl mx-auto overflow-x-auto">
+                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition whitespace-nowrap px-3">作業與訂正</button>
+                <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3">聯絡簿</button>
+                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3">傷病通知</button>
+                <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3"><i class="fa-solid fa-gear mr-1"></i>班級與學生設定</button>
             </div>
 
             <!-- 1. 作業與訂正管理 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（對應聯絡簿內容）</h2>
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（依座號排列）</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
@@ -105,7 +105,7 @@
                         <textarea id="note-content" rows="4" class="w-full px-3 py-2 rounded-lg border border-slate-300"></textarea>
                     </div>
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">📢 給家長的話 / 老師溫馨提醒</label>
+                        <label class="block font-medium text-slate-700 mb-1" id="teacher-msg-label">📢 給家長的話 / 老師溫馨提醒</label>
                         <textarea id="note-parent-message" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-amber-50/50"></textarea>
                     </div>
                     <div>
@@ -153,20 +153,58 @@
                 </div>
             </div>
 
-            <!-- 4. 學生名單一覽表 -->
-            <div id="section-roster" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4 hidden">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid id-card text-indigo-600 mr-2"></i>三年九班學生學號與座號一覽表</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 border-b">
-                                <th class="p-3">座號</th>
-                                <th class="p-3">學生姓名</th>
-                                <th class="p-3">學生學號</th>
-                            </tr>
-                        </thead>
-                        <tbody id="teacher-roster-tbody" class="divide-y divide-slate-100"></tbody>
-                    </table>
+            <!-- 4. 班級與學生設定 (老師自訂名單與班級資訊) -->
+            <div id="section-settings" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-6 max-w-3xl mx-auto hidden">
+                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-gear text-indigo-600 mr-2"></i>班級與學生名單自訂管理</h2>
+                
+                <!-- 班級基本設定 -->
+                <div class="grid grid-cols-3 gap-3 text-xs bg-slate-50 p-4 rounded-xl border">
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">學校名稱</label>
+                        <input type="text" id="setting-school" class="w-full px-3 py-2 rounded border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">班級名稱</label>
+                        <input type="text" id="setting-classname" class="w-full px-3 py-2 rounded border border-slate-300">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">老師姓名</label>
+                        <input type="text" id="setting-teacher" class="w-full px-3 py-2 rounded border border-slate-300">
+                    </div>
+                </div>
+
+                <!-- 新增學生 -->
+                <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 space-y-3 text-xs">
+                    <h3 class="font-bold text-indigo-900"><i class="fa-solid fa-user-plus mr-1"></i> 新增或修改學生資料</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <input type="text" id="new-seat" placeholder="座號 (例如: 01)" class="px-3 py-2 rounded border border-slate-300">
+                        <input type="text" id="new-name" placeholder="學生姓名" class="px-3 py-2 rounded border border-slate-300">
+                        <input type="text" id="new-id" placeholder="學生學號 (例如: 113056)" class="px-3 py-2 rounded border border-slate-300">
+                        <button onclick="addNewStudent()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded shadow transition">新增/更新學生</button>
+                    </div>
+                </div>
+
+                <!-- 現有學生名單總表（可直接刪除） -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-users mr-1"></i> 現有學生清單 (依座號排列)</h3>
+                        <button onclick="saveClassSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition">
+                            <i class="fa-solid fa-floppy-disk mr-1"></i> 儲存所有變更
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto max-h-80 border rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-600 border-b sticky top-0">
+                                    <th class="p-3">座號</th>
+                                    <th class="p-3">姓名</th>
+                                    <th class="p-3">學號</th>
+                                    <th class="p-3 text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settings-student-tbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
@@ -195,9 +233,12 @@
 
     <script>
         window.onload = function() {
-            const rememberedUser = localStorage.getItem('ncm309_remembered_user');
-            if (rememberedUser) {
-                document.getElementById('teacher-user').value = rememberedUser;
+            // 記住我：自動填入帳號與密碼
+            const savedUser = localStorage.getItem('ncm309_remembered_user');
+            const savedPass = localStorage.getItem('ncm309_remembered_pass');
+            if (savedUser && savedPass) {
+                document.getElementById('teacher-user').value = savedUser;
+                document.getElementById('teacher-pass').value = savedPass;
                 document.getElementById('remember-me').checked = true;
             }
         };
@@ -216,8 +257,9 @@
                 if (!parsed.teacherAuth) {
                     parsed.teacherAuth = { user: "nini309", pass: "20010909" };
                 }
-                // 強制保持學生名單完整同步
-                parsed.students = freshData.students;
+                if (!parsed.classInfo) {
+                    parsed.classInfo = freshData.classInfo;
+                }
                 return parsed;
             } catch (e) {
                 return freshData;
@@ -264,6 +306,7 @@
 
             return {
                 students: students,
+                classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
                 contactNote: { date: "民國 115 年 11 月 3 日 (星期二)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
                 historyNotes: [],
                 teacherAuth: { user: "nini309", pass: "20010909" }
@@ -283,8 +326,10 @@
             if (user === systemData.teacherAuth.user && pass === systemData.teacherAuth.pass) {
                 if (rememberMe) {
                     localStorage.setItem('ncm309_remembered_user', user);
+                    localStorage.setItem('ncm309_remembered_pass', pass); // 同時記住密碼
                 } else {
                     localStorage.removeItem('ncm309_remembered_user');
+                    localStorage.removeItem('ncm309_remembered_pass');
                 }
 
                 document.getElementById('teacher-login-modal').classList.add('hidden');
@@ -297,20 +342,33 @@
 
         function loadTeacherData() {
             const systemData = getSystemData();
+            const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
+            
+            document.getElementById('teacher-header-title').innerText = `${cInfo.className} • 教師管理後台`;
+            document.getElementById('teacher-msg-label').innerText = `📢 ${cInfo.teacherName}老師給家長的話 / 溫馨提醒`;
+
+            // 1. 載入班級設定表單
+            document.getElementById('setting-school').value = cInfo.schoolName;
+            document.getElementById('setting-classname').value = cInfo.className;
+            document.getElementById('setting-teacher').value = cInfo.teacherName;
+
+            // 2. 依照座號排序學生
+            const sortedIds = Object.keys(systemData.students).sort((a, b) => {
+                return parseInt(systemData.students[a].seat) - parseInt(systemData.students[b].seat);
+            });
+
             const tbody = document.getElementById('teacher-homework-tbody');
-            const rosterTbody = document.getElementById('teacher-roster-tbody');
+            const rosterTbody = document.getElementById('settings-student-tbody');
             const selectStudent = document.getElementById('inj-student-id');
             tbody.innerHTML = '';
             rosterTbody.innerHTML = '';
             selectStudent.innerHTML = '';
 
-            Object.keys(systemData.students).forEach(id => {
+            sortedIds.forEach(id => {
                 const student = systemData.students[id];
                 
-                // 1. 傷病通知下拉選單
                 selectStudent.innerHTML += `<option value="${id}">${student.seat} 號 - ${student.name} (學號: ${id})</option>`;
 
-                // 2. 作業管理表格
                 let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} 號 - ${student.name} <span class="text-xs text-slate-400">(${id})</span></td>`;
 
                 student.homework.forEach((hw, index) => {
@@ -328,28 +386,30 @@
                 rowHtml += `</tr>`;
                 tbody.innerHTML += rowHtml;
 
-                // 3. 學生名單總表表格
+                // 學生管理總表
                 rosterTbody.innerHTML += `
                     <tr class="hover:bg-slate-50">
                         <td class="p-3 font-bold text-slate-700">${student.seat} 號</td>
                         <td class="p-3 font-medium text-slate-800">${student.name}</td>
                         <td class="p-3 text-indigo-600 font-mono font-bold">${id}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteStudent('${id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded text-xs transition">刪除</button>
+                        </td>
                     </tr>
                 `;
             });
 
-            // 4. 聯絡簿
             document.getElementById('note-date').value = systemData.contactNote.date;
             document.getElementById('note-content').value = systemData.contactNote.content;
             document.getElementById('note-parent-message').value = systemData.contactNote.parentMessage || "";
             document.getElementById('note-reminder').value = systemData.contactNote.reminder;
 
-            // 5. 傷病通知確認狀態
+            // 3. 傷病通知確認狀態
             const injuryStatusList = document.getElementById('teacher-injury-status-list');
             injuryStatusList.innerHTML = '';
             let hasInjury = false;
 
-            Object.keys(systemData.students).forEach(id => {
+            sortedIds.forEach(id => {
                 const student = systemData.students[id];
                 if (student.injuries && student.injuries.length > 0) {
                     student.injuries.forEach(inj => {
@@ -381,6 +441,56 @@
             const systemData = getSystemData();
             systemData.students[studentId].homework[hwIndex].status = newStatus;
             saveSystemData(systemData);
+        }
+
+        function addNewStudent() {
+            const seat = document.getElementById('new-seat').value.trim();
+            const name = document.getElementById('new-name').value.trim();
+            const id = document.getElementById('new-id').value.trim();
+
+            if (!seat || !name || !id) {
+                alert("請完整填寫座號、姓名與學號！");
+                return;
+            }
+
+            const systemData = getSystemData();
+            systemData.students[id] = {
+                name: name,
+                seat: seat,
+                homework: [
+                    { name: "國文習作第 4 課", status: "1" },
+                    { name: "數學隨堂練習卷", status: "3" }
+                ],
+                injuries: []
+            };
+
+            saveSystemData(systemData);
+            alert(`已成功新增/更新學生：${seat} 號 ${name}！`);
+            document.getElementById('new-seat').value = '';
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-id').value = '';
+            loadTeacherData();
+        }
+
+        function deleteStudent(id) {
+            if (confirm("確定要刪除這位學生嗎？")) {
+                const systemData = getSystemData();
+                delete systemData.students[id];
+                saveSystemData(systemData);
+                loadTeacherData();
+            }
+        }
+
+        function saveClassSettings() {
+            const systemData = getSystemData();
+            systemData.classInfo = {
+                schoolName: document.getElementById('setting-school').value.trim(),
+                className: document.getElementById('setting-classname').value.trim(),
+                teacherName: document.getElementById('setting-teacher').value.trim()
+            };
+            saveSystemData(systemData);
+            alert("班級基本設定已成功儲存！");
+            loadTeacherData();
         }
 
         function saveContactNote() {
@@ -454,15 +564,15 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition";
-            document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition";
-            document.getElementById('tab-inj').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition";
-            document.getElementById('tab-ros').className = tab === 'roster' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition";
+            document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3";
+            document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3";
+            document.getElementById('tab-inj').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3";
+            document.getElementById('tab-set').className = tab === 'settings' ? "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-indigo-600 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3";
 
             document.getElementById('section-homework').classList.toggle('hidden', tab !== 'homework');
             document.getElementById('section-note').classList.toggle('hidden', tab !== 'note');
             document.getElementById('section-injury').classList.toggle('hidden', tab !== 'injury');
-            document.getElementById('section-roster').classList.toggle('hidden', tab !== 'roster');
+            document.getElementById('section-settings').classList.toggle('hidden', tab !== 'settings');
         }
     </script>
 </body>
