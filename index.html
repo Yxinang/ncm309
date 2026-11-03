@@ -132,13 +132,22 @@
 
     <script>
         function getSystemData() {
-            const data = localStorage.getItem('ncm309_school_data');
+            let data = localStorage.getItem('ncm309_school_data');
+            const freshData = generateDefaultData();
+
             if (!data) {
-                const defaultData = generateDefaultData();
-                localStorage.setItem('ncm309_school_data', JSON.stringify(defaultData));
-                return defaultData;
+                localStorage.setItem('ncm309_school_data', JSON.stringify(freshData));
+                return freshData;
             }
-            return JSON.parse(data);
+
+            try {
+                let parsed = JSON.parse(data);
+                // 強制確保學號名單完整更新，不會被舊的快取覆蓋
+                parsed.students = freshData.students;
+                return parsed;
+            } catch (e) {
+                return freshData;
+            }
         }
 
         function generateDefaultData() {
