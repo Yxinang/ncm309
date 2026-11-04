@@ -60,7 +60,7 @@
                     <button onclick="openChangePasswordModal()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition">
                         <i class="fa-solid fa-key mr-1"></i> 更改帳密
                     </button>
-                    <button onclick="location.reload()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <button onclick="logoutTeacher()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
                         登出
                     </button>
                 </div>
@@ -75,7 +75,7 @@
                 <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3"><i class="fa-solid fa-gear mr-1"></i>班級與學生設定</button>
             </div>
 
-            <!-- 1. 作業與訂正管理 (完全與當前聯絡簿同步) -->
+            <!-- 1. 作業與訂正管理 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
                     <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（對應當前聯絡簿項目）</h2>
@@ -244,7 +244,7 @@
     </div>
 
     <script>
-        let editingNoteId = null; // 當前編輯中的聯絡簿唯一ID
+        let editingNoteId = null;
 
         window.onload = function() {
             const savedUser = localStorage.getItem('ncm309_remembered_user');
@@ -253,6 +253,14 @@
                 document.getElementById('teacher-user').value = savedUser;
                 document.getElementById('teacher-pass').value = savedPass;
                 document.getElementById('remember-me').checked = true;
+            }
+
+            // 老師重新整理自動保持登入狀態
+            const isTeacherLogged = sessionStorage.getItem('ncm309_teacher_logged');
+            if (isTeacherLogged === 'true') {
+                document.getElementById('teacher-login-modal').classList.add('hidden');
+                document.getElementById('teacher-dashboard').classList.remove('hidden');
+                loadTeacherData();
             }
         };
 
@@ -351,12 +359,19 @@
                     localStorage.removeItem('ncm309_remembered_pass');
                 }
 
+                sessionStorage.setItem('ncm309_teacher_logged', 'true'); // 保持登入狀態
+
                 document.getElementById('teacher-login-modal').classList.add('hidden');
                 document.getElementById('teacher-dashboard').classList.remove('hidden');
                 loadTeacherData();
             } else {
                 alert("帳號或密碼錯誤！");
             }
+        }
+
+        function logoutTeacher() {
+            sessionStorage.removeItem('ncm309_teacher_logged');
+            location.reload();
         }
 
         function loadTeacherData() {
@@ -370,7 +385,6 @@
             document.getElementById('setting-classname').value = cInfo.className;
             document.getElementById('setting-teacher').value = cInfo.teacherName;
 
-            // 取得當前要管理的聯絡簿
             let activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId);
             if (!activeNote) {
                 activeNote = systemData.notesList[0];
@@ -379,7 +393,6 @@
 
             document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote.date}`;
 
-            // 動態產生作業標題列（根據當前聯絡簿內容的每一行）
             const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
             const thead = document.getElementById('teacher-homework-thead');
             let theadHtml = `<th class="p-3">座號 / 姓名</th>`;
@@ -500,7 +513,6 @@
                 `;
             });
 
-            // 預設將編輯器載入當前啟用的聯絡簿
             editNote(systemData.activeNoteId);
         }
 
@@ -556,9 +568,9 @@
             };
 
             if (editingNoteId === 'new') {
-                const newId = new Date().toISOString();
+                const newId = new Date().toISOString(); // ISO 標準時間不重複 ID
                 systemData.notesList.unshift({ id: newId, ...updatedNoteData });
-                systemData.activeNoteId = newId; // 自動設為當前
+                systemData.activeNoteId = newId;
             } else {
                 const idx = systemData.notesList.findIndex(n => n.id === editingNoteId);
                 if (idx !== -1) {
