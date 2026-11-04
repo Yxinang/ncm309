@@ -78,7 +78,7 @@
             <!-- 1. 作業與訂正管理 -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-3">
-                    <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（每位學生最後方設有一鍵全部繳交按鈕）</h2>
+                    <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（設有「全部繳交」與「全部未繳交」快捷鍵）</h2>
                     <span id="hw-current-date-tag" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-bold">載入中...</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -402,7 +402,7 @@
                     theadHtml += `<th class="p-3">${line}</th>`;
                 });
             }
-            // 最右側新增「一鍵全部繳交」操作欄位標題
+            // 快捷操作欄位（包含全部繳交與全部未繳交）
             theadHtml += `<th class="p-3 text-center">快捷操作</th>`;
             thead.innerHTML = theadHtml;
 
@@ -445,11 +445,14 @@
                     });
                 }
 
-                // 每一位學生最後方專屬的「全部繳交」按鈕
+                // 每一位學生最後方專屬的「全部繳交」與「全部未繳交」按鈕
                 rowHtml += `
-                    <td class="p-3 text-center">
-                        <button onclick="setAllSubmittedForStudent('${id}', '${activeNote.id}', ${hwLines.length})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-[11px] font-bold shadow transition">
-                            <i class="fa-solid fa-check-double mr-1"></i> 全部繳交
+                    <td class="p-3 text-center space-x-1 whitespace-nowrap">
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '1')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow transition">
+                            全部繳交
+                        </button>
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '3')" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded text-[11px] font-bold shadow transition">
+                            全部未繳交
                         </button>
                     </td>
                 `;
@@ -503,8 +506,8 @@
             }
         }
 
-        // 該生一鍵全部繳交功能
-        function setAllSubmittedForStudent(studentId, noteId, totalHwCount) {
+        // 一鍵全部繳交或全部未繳交（不需再次確認，秒速執行）
+        function setAllStatusForStudent(studentId, noteId, totalHwCount, targetStatus) {
             if (totalHwCount === 0) {
                 alert("目前沒有作業項目可供設定！");
                 return;
@@ -517,15 +520,12 @@
                 systemData.students[studentId].homeworkStatus[noteId] = {};
             }
 
-            // 將該聯絡簿的所有作業全部設為 "1"（繳交）
             for (let i = 0; i < totalHwCount; i++) {
-                systemData.students[studentId].homeworkStatus[noteId][i] = "1";
+                systemData.students[studentId].homeworkStatus[noteId][i] = targetStatus;
             }
 
             saveSystemData(systemData);
             loadTeacherData();
-            const studentName = systemData.students[studentId].name;
-            alert(`${studentName} 同學的本日作業已全部設為「繳交」！`);
         }
 
         function loadTeacherNotesManager() {
