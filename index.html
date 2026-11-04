@@ -152,6 +152,7 @@
             try {
                 let parsed = JSON.parse(data);
                 if (!parsed.classInfo) parsed.classInfo = freshData.classInfo;
+                if (!parsed.notesList) parsed.notesList = freshData.notesList;
                 if (!parsed.students || Object.keys(parsed.students).length < 25) {
                     parsed.students = freshData.students;
                 }
@@ -182,28 +183,33 @@
                 students[id] = {
                     name: names[index],
                     seat: seatNum,
-                    homework: [
-                        { name: "國文習作第 4 課", status: "1" },
-                        { name: "數學隨堂練習卷", status: "3" }
-                    ],
+                    homeworkStatus: {}, // 記錄各篇聯絡簿ID的作業狀態
                     injuries: []
                 };
             });
             students["123"] = {
                 name: "測試帳號",
                 seat: "30",
-                homework: [
-                    { name: "國文習作第 4 課", status: "1" },
-                    { name: "數學隨堂練習卷", status: "4" }
-                ],
+                homeworkStatus: {},
                 injuries: []
             };
+
+            const defaultNoteId = new Date().toISOString();
+            const defaultNotesList = [
+                {
+                    id: defaultNoteId,
+                    date: "民國 115 年 11 月 4 日 (星期三)",
+                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
+                    parentMessage: "本週三有戶外教學。",
+                    reminder: "帶外套。"
+                }
+            ];
 
             return {
                 students: students,
                 classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
-                contactNote: { date: "民國 115 年 11 月 4 日 (星期三)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
-                historyNotes: [],
+                notesList: defaultNotesList,
+                activeNoteId: defaultNoteId,
                 teacherAuth: { user: "nini309", pass: "20010909" }
             };
         }
@@ -235,11 +241,13 @@
         }
 
         function renderDashboard(student, systemData) {
-            const note = systemData.contactNote;
-            document.getElementById('note-display-date').innerText = note.date;
-            document.getElementById('note-display-content').innerText = note.content;
-            document.getElementById('note-display-message').innerText = note.parentMessage || "尚無留言";
-            document.getElementById('note-display-reminder').innerText = note.reminder;
+            // 找出當前啟動的聯絡簿
+            const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
+            
+            document.getElementById('note-display-date').innerText = activeNote.date;
+            document.getElementById('note-display-content').innerText = activeNote.content;
+            document.getElementById('note-display-message').innerText = activeNote.parentMessage || "尚無留言";
+            document.getElementById('note-display-reminder').innerText = activeNote.reminder || "";
 
             const statusMap = {
                 "1": { text: "繳交", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
@@ -248,21 +256,32 @@
                 "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-600 border-rose-200" }
             };
 
+            // 從聯絡簿內容自動解析作業項目
+            const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
+            const studentHwStatus = (student.homeworkStatus && student.homeworkStatus[activeNote.id]) || {};
+
             const hwContainer = document.getElementById('today-homework-list');
             hwContainer.innerHTML = '';
-            student.homework.forEach(hw => {
-                const s = statusMap[hw.status] || statusMap["3"];
-                hwContainer.innerHTML += `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                        <span class="font-medium text-slate-700">${hw.name}</span>
-                        <span class="px-2.5 py-1 rounded-full font-bold border ${s.color}">
-                            ${s.text}
-                        </span>
-                    </div>
-                `;
-            });
-            document.getElementById('homework-summary').innerText = `${student.homework.length} 項作業`;
+            
+            if (hwLines.length === 0) {
+                hwContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-2">本日無登記作業</p>`;
+            } else {
+                hwLines.forEach((line, idx) => {
+                    const statusKey = studentHwStatus[idx] || "3"; // 預設未完成
+                    const s = statusMap[statusKey];
+                    hwContainer.innerHTML += `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                            <span class="font-medium text-slate-700">${line}</span>
+                            <span class="px-2.5 py-1 rounded-full font-bold border ${s.color}">
+                                ${s.text}
+                            </span>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('homework-summary').innerText = `${hwLines.length} 項作業`;
 
+            // 傷病通知
             const injuryContainer = document.getElementById('today-injury-list');
             const historyContainer = document.getElementById('all-history-list');
             injuryContainer.innerHTML = '';
@@ -306,19 +325,17 @@
                 });
             }
 
-            let historyHtml = `<div class="p-3 bg-slate-50 rounded-xl border text-xs space-y-1"><p class="font-bold text-indigo-600">📅 當前聯絡簿 (${note.date})</p><p class="text-slate-700 whitespace-pre-line">${note.content}</p></div>`;
-            
-            if (systemData.historyNotes && systemData.historyNotes.length > 0) {
-                systemData.historyNotes.forEach(hn => {
-                    historyHtml += `
-                        <div class="p-3 bg-slate-50 rounded-xl border text-xs space-y-1">
-                            <p class="font-bold text-indigo-600">📜 歷史聯絡簿 (${hn.date})</p>
-                            <p class="text-slate-700 whitespace-pre-line">${hn.content}</p>
-                        </div>
-                    `;
-                });
-            }
-
+            // 歷史紀錄
+            let historyHtml = '';
+            systemData.notesList.forEach(note => {
+                historyHtml += `
+                    <div class="p-3 bg-slate-50 rounded-xl border text-xs space-y-1">
+                        <p class="font-bold text-indigo-600">📜 聯絡簿紀錄 (${note.date})</p>
+                        <p class="text-slate-700 whitespace-pre-line">${note.content}</p>
+                        ${note.parentMessage ? `<p class="text-amber-800 bg-amber-50 p-1.5 rounded mt-1">老師的話：${note.parentMessage}</p>` : ''}
+                    </div>
+                `;
+            });
             historyContainer.innerHTML = historyHtml;
         }
 
