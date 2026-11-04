@@ -138,6 +138,24 @@
                 document.getElementById('login-footer-school').innerText = systemData.classInfo.schoolName;
                 document.getElementById('footer-school-name').innerText = `${systemData.classInfo.schoolName} • 隨時守護孩子安全`;
             }
+
+            // 重新整理自動恢復登入狀態
+            const savedStudentId = sessionStorage.getItem('ncm309_logged_student');
+            if (savedStudentId && systemData.students[savedStudentId]) {
+                currentStudentId = savedStudentId;
+                const student = systemData.students[savedStudentId];
+                const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
+
+                document.getElementById('header-child-name').innerText = student.name;
+                document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
+                document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-bullhorn text-amber-600"></i> ${cInfo.teacherName}老師給家長的話：`;
+
+                renderDashboard(student, systemData);
+
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('app-header').classList.remove('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+            }
         };
 
         function getSystemData() {
@@ -183,7 +201,7 @@
                 students[id] = {
                     name: names[index],
                     seat: seatNum,
-                    homeworkStatus: {}, // 記錄各篇聯絡簿ID的作業狀態
+                    homeworkStatus: {},
                     injuries: []
                 };
             });
@@ -194,7 +212,7 @@
                 injuries: []
             };
 
-            const defaultNoteId = new Date().toISOString();
+            const defaultNoteId = "default-note-id";
             const defaultNotesList = [
                 {
                     id: defaultNoteId,
@@ -223,6 +241,8 @@
 
             if (systemData.students[studentId]) {
                 currentStudentId = studentId;
+                sessionStorage.setItem('ncm309_logged_student', studentId); // 記錄登入狀態
+
                 const student = systemData.students[studentId];
                 const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
 
@@ -241,7 +261,6 @@
         }
 
         function renderDashboard(student, systemData) {
-            // 找出當前啟動的聯絡簿
             const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
             
             document.getElementById('note-display-date').innerText = activeNote.date;
@@ -256,7 +275,6 @@
                 "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-600 border-rose-200" }
             };
 
-            // 從聯絡簿內容自動解析作業項目
             const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
             const studentHwStatus = (student.homeworkStatus && student.homeworkStatus[activeNote.id]) || {};
 
@@ -267,7 +285,7 @@
                 hwContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-2">本日無登記作業</p>`;
             } else {
                 hwLines.forEach((line, idx) => {
-                    const statusKey = studentHwStatus[idx] || "3"; // 預設未完成
+                    const statusKey = studentHwStatus[idx] || "3";
                     const s = statusMap[statusKey];
                     hwContainer.innerHTML += `
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
@@ -281,7 +299,6 @@
             }
             document.getElementById('homework-summary').innerText = `${hwLines.length} 項作業`;
 
-            // 傷病通知
             const injuryContainer = document.getElementById('today-injury-list');
             const historyContainer = document.getElementById('all-history-list');
             injuryContainer.innerHTML = '';
@@ -325,7 +342,6 @@
                 });
             }
 
-            // 歷史紀錄
             let historyHtml = '';
             systemData.notesList.forEach(note => {
                 historyHtml += `
@@ -362,6 +378,7 @@
 
         function logout() {
             currentStudentId = null;
+            sessionStorage.removeItem('ncm309_logged_student');
             document.getElementById('login-student-id').value = '';
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('app-header').classList.add('hidden');
