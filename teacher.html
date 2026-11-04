@@ -75,16 +75,17 @@
                 <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 transition whitespace-nowrap px-3"><i class="fa-solid fa-gear mr-1"></i>班級與學生設定</button>
             </div>
 
-            <!-- 1. 作業與訂正管理 -->
+            <!-- 1. 作業與訂正管理 (完全與當前聯絡簿同步) -->
             <div id="section-homework" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="font-bold text-slate-800 text-sm border-b pb-3"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（依座號排列）</h2>
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h2 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>全班作業狀態管理（對應當前聯絡簿項目）</h2>
+                    <span id="hw-current-date-tag" class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-bold">載入中...</span>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 border-b">
+                            <tr class="bg-slate-50 text-slate-600 border-b" id="teacher-homework-thead">
                                 <th class="p-3">座號 / 姓名</th>
-                                <th class="p-3">國文習作第 4 課</th>
-                                <th class="p-3">數學隨堂練習卷</th>
                             </tr>
                         </thead>
                         <tbody id="teacher-homework-tbody" class="divide-y divide-slate-100"></tbody>
@@ -108,7 +109,7 @@
                             <input type="text" id="note-date" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" placeholder="例如：民國 115 年 11 月 4 日 (星期三)">
                         </div>
                         <div>
-                            <label class="block font-medium text-slate-700 mb-1">聯絡簿抄寫內容</label>
+                            <label class="block font-medium text-slate-700 mb-1">聯絡簿抄寫內容（每行一項作業，會自動同步至作業區）</label>
                             <textarea id="note-content" rows="4" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white"></textarea>
                         </div>
                         <div>
@@ -125,7 +126,7 @@
 
                 <!-- 歷史聯絡簿完整列表 -->
                 <div class="space-y-3 border-t pt-4">
-                    <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-box-archive text-indigo-600 mr-2"></i>歷史聯絡簿紀錄總覽（點擊可直接修改）</h3>
+                    <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-box-archive text-indigo-600 mr-2"></i>歷史聯絡簿紀錄總覽（點擊可切換當前或修改）</h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="teacher-history-notes-list"></div>
                 </div>
             </div>
@@ -243,7 +244,7 @@
     </div>
 
     <script>
-        let editingNoteIndex = 'current';
+        let editingNoteId = null; // 當前編輯中的聯絡簿唯一ID
 
         window.onload = function() {
             const savedUser = localStorage.getItem('ncm309_remembered_user');
@@ -268,7 +269,8 @@
                 let parsed = JSON.parse(data);
                 if (!parsed.teacherAuth) parsed.teacherAuth = { user: "nini309", pass: "20010909" };
                 if (!parsed.classInfo) parsed.classInfo = freshData.classInfo;
-                if (!parsed.historyNotes) parsed.historyNotes = [];
+                if (!parsed.notesList) parsed.notesList = freshData.notesList;
+                if (!parsed.activeNoteId) parsed.activeNoteId = freshData.activeNoteId;
                 if (!parsed.students || Object.keys(parsed.students).length < 25) {
                     parsed.students = freshData.students;
                 }
@@ -299,28 +301,33 @@
                 students[id] = {
                     name: names[index],
                     seat: seatNum,
-                    homework: [
-                        { name: "國文習作第 4 課", status: "1" },
-                        { name: "數學隨堂練習卷", status: "3" }
-                    ],
+                    homeworkStatus: {},
                     injuries: []
                 };
             });
             students["123"] = {
                 name: "測試帳號",
                 seat: "30",
-                homework: [
-                    { name: "國文習作第 4 課", status: "1" },
-                    { name: "數學隨堂練習卷", status: "4" }
-                ],
+                homeworkStatus: {},
                 injuries: []
             };
+
+            const defaultId = new Date().toISOString();
+            const defaultNotesList = [
+                {
+                    id: defaultId,
+                    date: "民國 115 年 11 月 4 日 (星期三)",
+                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
+                    parentMessage: "本週三有戶外教學。",
+                    reminder: "帶外套。"
+                }
+            ];
 
             return {
                 students: students,
                 classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
-                contactNote: { date: "民國 115 年 11 月 4 日 (星期三)", content: "1. 國文習作第 4 課完成", parentMessage: "本週三有戶外教學。", reminder: "帶外套。" },
-                historyNotes: [],
+                notesList: defaultNotesList,
+                activeNoteId: defaultId,
                 teacherAuth: { user: "nini309", pass: "20010909" }
             };
         }
@@ -363,6 +370,28 @@
             document.getElementById('setting-classname').value = cInfo.className;
             document.getElementById('setting-teacher').value = cInfo.teacherName;
 
+            // 取得當前要管理的聯絡簿
+            let activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId);
+            if (!activeNote) {
+                activeNote = systemData.notesList[0];
+                systemData.activeNoteId = activeNote.id;
+            }
+
+            document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote.date}`;
+
+            // 動態產生作業標題列（根據當前聯絡簿內容的每一行）
+            const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
+            const thead = document.getElementById('teacher-homework-thead');
+            let theadHtml = `<th class="p-3">座號 / 姓名</th>`;
+            if (hwLines.length === 0) {
+                theadHtml += `<th class="p-3 text-slate-400">尚無作業項目（請至聯絡簿管理新增）</th>`;
+            } else {
+                hwLines.forEach(line => {
+                    theadHtml += `<th class="p-3">${line}</th>`;
+                });
+            }
+            thead.innerHTML = theadHtml;
+
             const sortedIds = Object.keys(systemData.students).sort((a, b) => {
                 return parseInt(systemData.students[a].seat) - parseInt(systemData.students[b].seat);
             });
@@ -381,18 +410,26 @@
 
                 let rowHtml = `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${student.seat} 號 - ${student.name} <span class="text-xs text-slate-400">(${id})</span></td>`;
 
-                student.homework.forEach((hw, index) => {
-                    rowHtml += `
-                        <td class="p-3">
-                            <select onchange="updateHomework('${id}', ${index}, this.value)" class="px-2 py-1 rounded border border-slate-300 text-xs font-medium">
-                                <option value="1" ${hw.status === '1' ? 'selected' : ''}>1. 繳交</option>
-                                <option value="2" ${hw.status === '2' ? 'selected' : ''}>2. 已補交</option>
-                                <option value="3" ${hw.status === '3' ? 'selected' : ''}>3. 未完成</option>
-                                <option value="4" ${hw.status === '4' ? 'selected' : ''}>4. 需訂正、補交</option>
-                            </select>
-                        </td>
-                    `;
-                });
+                if (hwLines.length === 0) {
+                    rowHtml += `<td class="p-3 text-slate-400">-</td>`;
+                } else {
+                    if (!student.homeworkStatus) student.homeworkStatus = {};
+                    if (!student.homeworkStatus[activeNote.id]) student.homeworkStatus[activeNote.id] = {};
+
+                    hwLines.forEach((line, index) => {
+                        const currentStatus = student.homeworkStatus[activeNote.id][index] || "3";
+                        rowHtml += `
+                            <td class="p-3">
+                                <select onchange="updateHomework('${id}', '${activeNote.id}', ${index}, this.value)" class="px-2 py-1 rounded border border-slate-300 text-xs font-medium">
+                                    <option value="1" ${currentStatus === '1' ? 'selected' : ''}>1. 繳交</option>
+                                    <option value="2" ${currentStatus === '2' ? 'selected' : ''}>2. 已補交</option>
+                                    <option value="3" ${currentStatus === '3' ? 'selected' : ''}>3. 未完成</option>
+                                    <option value="4" ${currentStatus === '4' ? 'selected' : ''}>4. 需訂正、補交</option>
+                                </select>
+                            </td>
+                        `;
+                    });
+                }
                 rowHtml += `</tr>`;
                 tbody.innerHTML += rowHtml;
 
@@ -447,66 +484,48 @@
             const listContainer = document.getElementById('teacher-history-notes-list');
             listContainer.innerHTML = '';
 
-            // 修正這裡：確保顯示乾淨的單一括號格式
-            const cleanDateStr = (dateStr) => {
-                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
-            };
-
-            const curDate = cleanDateStr(systemData.contactNote.date);
-
-            listContainer.innerHTML += `
-                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-2">
-                    <div class="flex justify-between items-center font-bold text-amber-900">
-                        <span>📅 當前聯絡簿 (${curDate})</span>
-                        <button onclick="editNote('current')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-[11px] shadow transition">編輯 / 修改</button>
-                    </div>
-                    <p class="text-slate-700 whitespace-pre-line">${systemData.contactNote.content}</p>
-                </div>
-            `;
-
-            if (systemData.historyNotes && systemData.historyNotes.length > 0) {
-                systemData.historyNotes.forEach((hn, index) => {
-                    const hDate = cleanDateStr(hn.date);
-                    listContainer.innerHTML += `
-                        <div class="p-3 rounded-xl bg-slate-50 border text-xs space-y-2">
-                            <div class="flex justify-between items-center font-bold text-slate-700">
-                                <span>📜 歷史聯絡簿 (${hDate})</span>
-                                <button onclick="editNote(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-[11px] shadow transition">編輯 / 修改</button>
+            systemData.notesList.forEach(note => {
+                const isActive = note.id === systemData.activeNoteId;
+                listContainer.innerHTML += `
+                    <div class="p-3 rounded-xl ${isActive ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200'} border text-xs space-y-2">
+                        <div class="flex justify-between items-center font-bold ${isActive ? 'text-amber-900' : 'text-slate-700'}">
+                            <span>${isActive ? '📌 【當前顯示中】' : '📜'} 聯絡簿 (${note.date})</span>
+                            <div class="flex gap-1">
+                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-[11px] shadow transition">設為當前</button>` : ''}
+                                <button onclick="editNote('${note.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] shadow transition">編輯</button>
                             </div>
-                            <p class="text-slate-600 whitespace-pre-line">${hn.content}</p>
                         </div>
-                    `;
-                });
-            } else {
-                listContainer.innerHTML += `<p class="text-center text-xs text-slate-400 py-2">尚無其他歷史聯絡簿紀錄</p>`;
-            }
+                        <p class="text-slate-600 whitespace-pre-line">${note.content}</p>
+                    </div>
+                `;
+            });
 
-            editNote('current');
+            // 預設將編輯器載入當前啟用的聯絡簿
+            editNote(systemData.activeNoteId);
         }
 
-        function editNote(target) {
-            editingNoteIndex = target;
+        function setActiveNote(id) {
             const systemData = getSystemData();
-            let note = null;
+            systemData.activeNoteId = id;
+            saveSystemData(systemData);
+            loadTeacherData();
+            alert("已成功切換當前顯示的聯絡簿！作業區已同步更新。");
+        }
 
-            if (target === 'current') {
-                note = systemData.contactNote;
-            } else {
-                note = systemData.historyNotes[target];
-            }
+        function editNote(id) {
+            editingNoteId = id;
+            const systemData = getSystemData();
+            const note = systemData.notesList.find(n => n.id === id);
+            if (!note) return;
 
-            const cleanDateStr = (dateStr) => {
-                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
-            };
-
-            document.getElementById('note-date').value = cleanDateStr(note.date);
+            document.getElementById('note-date').value = note.date;
             document.getElementById('note-content').value = note.content;
             document.getElementById('note-parent-message').value = note.parentMessage || "";
             document.getElementById('note-reminder').value = note.reminder || "";
         }
 
         function prepareNewNote() {
-            editingNoteIndex = 'current';
+            editingNoteId = 'new';
             const now = new Date();
             document.getElementById('note-date').value = `民國 115 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 (星期三)`;
             document.getElementById('note-content').value = "";
@@ -515,38 +534,40 @@
             alert("已準備好發布新的一天聯絡簿！填寫完畢後點擊下方儲存即可。");
         }
 
-        function updateHomework(studentId, hwIndex, newStatus) {
+        function updateHomework(studentId, noteId, hwIndex, newStatus) {
             const systemData = getSystemData();
-            systemData.students[studentId].homework[hwIndex].status = newStatus;
+            if (!systemData.students[studentId].homeworkStatus) {
+                systemData.students[studentId].homeworkStatus = {};
+            }
+            if (!systemData.students[studentId].homeworkStatus[noteId]) {
+                systemData.students[studentId].homeworkStatus[noteId] = {};
+            }
+            systemData.students[studentId].homeworkStatus[noteId][hwIndex] = newStatus;
             saveSystemData(systemData);
         }
 
         function saveContactNote() {
             const systemData = getSystemData();
-            
-            const cleanDateStr = (dateStr) => {
-                return dateStr.replace(/^\(+/, '').replace(/\)+$/, '');
-            };
-
-            const updatedNote = {
-                date: cleanDateStr(document.getElementById('note-date').value),
+            const updatedNoteData = {
+                date: document.getElementById('note-date').value,
                 content: document.getElementById('note-content').value,
                 parentMessage: document.getElementById('note-parent-message').value,
                 reminder: document.getElementById('note-reminder').value
             };
 
-            if (editingNoteIndex === 'current') {
-                if (systemData.contactNote && systemData.contactNote.content) {
-                    if (!systemData.historyNotes) systemData.historyNotes = [];
-                    systemData.historyNotes.unshift(systemData.contactNote);
-                }
-                systemData.contactNote = updatedNote;
+            if (editingNoteId === 'new') {
+                const newId = new Date().toISOString();
+                systemData.notesList.unshift({ id: newId, ...updatedNoteData });
+                systemData.activeNoteId = newId; // 自動設為當前
             } else {
-                systemData.historyNotes[editingNoteIndex] = updatedNote;
+                const idx = systemData.notesList.findIndex(n => n.id === editingNoteId);
+                if (idx !== -1) {
+                    systemData.notesList[idx] = { id: editingNoteId, ...updatedNoteData };
+                }
             }
             
             saveSystemData(systemData);
-            alert("聯絡簿已成功儲存與更新！");
+            alert("聯絡簿與對應作業已成功儲存與更新！");
             loadTeacherData();
         }
 
@@ -564,10 +585,7 @@
             systemData.students[id] = {
                 name: name,
                 seat: seat,
-                homework: [
-                    { name: "國文習作第 4 課", status: "1" },
-                    { name: "數學隨堂練習卷", status: "3" }
-                ],
+                homeworkStatus: {},
                 injuries: []
             };
 
