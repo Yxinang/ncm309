@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <!-- 2. 聯絡簿內容與自訂時間管理 -->
+            <!-- 2. 聯絡簿內容與刪除/修改管理 -->
             <div id="section-note" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-6 max-w-xl mx-auto hidden">
                 <div class="space-y-4 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/80">
                     <div class="flex justify-between items-center border-b border-amber-200/60 pb-2">
@@ -127,8 +127,9 @@
                     </div>
                 </div>
 
+                <!-- 歷史聯絡簿列表（內含刪除按鈕） -->
                 <div class="space-y-3 border-t border-amber-100 pt-4">
-                    <h3 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-box-archive text-amber-500 mr-2"></i>歷史聯絡簿紀錄總覽</h3>
+                    <h3 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-box-archive text-amber-500 mr-2"></i>歷史聯絡簿紀錄總覽（支援隨時刪除或修改）</h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="teacher-history-notes-list"></div>
                 </div>
             </div>
@@ -425,9 +426,9 @@
                 systemData.activeNoteId = activeNote.id;
             }
 
-            document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote.date}`;
+            document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote ? activeNote.date : '無'}`;
 
-            const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
+            const hwLines = activeNote && activeNote.content ? activeNote.content.split('\n').filter(line => line.trim() !== '') : [];
             const thead = document.getElementById('teacher-homework-thead');
             let theadHtml = `<th class="p-3">座號 / 姓名</th>`;
             if (hwLines.length === 0) {
@@ -625,15 +626,16 @@
             const listContainer = document.getElementById('teacher-history-notes-list');
             listContainer.innerHTML = '';
 
-            systemData.notesList.forEach(note => {
+            systemData.notesList.forEach((note) => {
                 const isActive = note.id === systemData.activeNoteId;
                 listContainer.innerHTML += `
                     <div class="p-3.5 rounded-2xl ${isActive ? 'bg-amber-100/60 border-amber-300' : 'bg-amber-50/30 border-amber-200/60'} border text-xs space-y-2">
                         <div class="flex justify-between items-center font-bold ${isActive ? 'text-amber-900' : 'text-slate-700'}">
                             <span>${isActive ? '📌 【當前顯示中】' : '📜'} 聯絡簿 (${note.date})</span>
                             <div class="flex gap-1">
-                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-xl text-[11px] shadow-sm transition">設為當前</button>` : ''}
-                                <button onclick="editNote('${note.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded-xl text-[11px] shadow-sm transition">編輯</button>
+                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">設為當前</button>` : ''}
+                                <button onclick="editNote('${note.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">編輯</button>
+                                <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">刪除</button>
                             </div>
                         </div>
                         <p class="text-slate-600 whitespace-pre-line">${note.content}</p>
@@ -643,6 +645,26 @@
 
             if (!editingNoteId && systemData.notesList.length > 0) {
                 editNote(systemData.activeNoteId);
+            }
+        }
+
+        // 刪除指定的某一天聯絡簿
+        function deleteNote(id) {
+            const systemData = getSystemData();
+            if (systemData.notesList.length <= 1) {
+                alert("至少需要保留一篇聯絡簿，無法全部刪除！");
+                return;
+            }
+
+            if (confirm("確定要刪除這篇聯絡簿嗎？")) {
+                systemData.notesList = systemData.notesList.filter(n => n.id !== id);
+                // 如果刪除的是當前啟動的，自動切換到第一篇
+                if (systemData.activeNoteId === id) {
+                    systemData.activeNoteId = systemData.notesList[0].id;
+                }
+                saveSystemData(systemData);
+                alert("聯絡簿已成功刪除！");
+                loadTeacherData();
             }
         }
 
@@ -828,7 +850,7 @@
             document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
             document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
             document.getElementById('tab-inj').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
-            document.getElementById('tab-set').className = tab === 'settings' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
+            document.getElementById('tab-set').className = tab === 'settings' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition whitespace-nowrap px-3";
 
             document.getElementById('section-homework').classList.toggle('hidden', tab !== 'homework');
             document.getElementById('section-note').classList.toggle('hidden', tab !== 'note');
