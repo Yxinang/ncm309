@@ -41,10 +41,14 @@
                 <p class="text-xs text-amber-700/70">請輸入學生學號來陪伴寶貝每一天 ✨</p>
             </div>
 
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form onsubmit="handleLogin(event)" class="space-y-4 text-xs">
                 <div>
-                    <label class="block text-xs font-bold text-amber-900/80 mb-1">學生學號</label>
+                    <label class="block font-bold text-amber-900/80 mb-1">學生學號</label>
                     <input type="text" id="login-student-id" required placeholder="請輸入學生學號" class="w-full px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50/30 text-sm focus:ring-2 focus:ring-amber-400 outline-none">
+                </div>
+                <div class="flex items-center pt-1">
+                    <input type="checkbox" id="parent-remember-me" class="w-4 h-4 text-amber-600 rounded border-amber-300">
+                    <label for="parent-remember-me" class="ml-2 text-amber-900 font-medium">記住我 (下次自動登入)</label>
                 </div>
                 <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-2xl shadow-md transition text-sm">
                     進入專屬小天地 🧸
@@ -134,7 +138,7 @@
     </footer>
 
     <script>
-        const CLOUD_BIN_URL = 'https://api.jsonbin.io/v3/b/65f6c82d3dcbb1b7cc342831'; // 共用雲端同步通道
+        const CLOUD_BIN_URL = 'https://api.jsonbin.io/v3/b/65f6c82d3dcbb1b7cc342831';
 
         window.onload = async function() {
             await syncLoadData();
@@ -145,21 +149,14 @@
                 document.getElementById('footer-school-name').innerText = `${systemData.classInfo.schoolName} • 溫馨守護每一刻 💛`;
             }
 
-            const savedStudentId = sessionStorage.getItem('ncm309_logged_student');
-            if (savedStudentId && systemData.students[savedStudentId]) {
-                currentStudentId = savedStudentId;
-                const student = systemData.students[savedStudentId];
-                const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
-
-                document.getElementById('header-child-name').innerText = student.name;
-                document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
-                document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-heart text-rose-500"></i> ${cInfo.teacherName}老師給家長的話：`;
-
-                renderDashboard(student, systemData);
-
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('app-header').classList.remove('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
+            // 自動帶入或自動登入家長之前記住的學號
+            const rememberedId = localStorage.getItem('ncm309_remembered_parent_id');
+            if (rememberedId && systemData.students[rememberedId]) {
+                document.getElementById('login-student-id').value = rememberedId;
+                document.getElementById('parent-remember-me').checked = true;
+                
+                // 如果已經有勾選記住我，可以直接自動登入進入畫面
+                autoLoginParent(rememberedId, systemData);
             }
         };
 
@@ -244,27 +241,37 @@
         function handleLogin(event) {
             event.preventDefault();
             const studentId = document.getElementById('login-student-id').value.trim();
+            const rememberMe = document.getElementById('parent-remember-me').checked;
             const systemData = getSystemData();
 
             if (systemData.students[studentId]) {
-                currentStudentId = studentId;
-                sessionStorage.setItem('ncm309_logged_student', studentId);
-
-                const student = systemData.students[studentId];
-                const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
-
-                document.getElementById('header-child-name').innerText = student.name;
-                document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
-                document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-heart text-rose-500"></i> ${cInfo.teacherName}老師給家長的話：`;
-
-                renderDashboard(student, systemData);
-
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('app-header').classList.remove('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
+                if (rememberMe) {
+                    localStorage.setItem('ncm309_remembered_parent_id', studentId);
+                } else {
+                    localStorage.removeItem('ncm309_remembered_parent_id');
+                }
+                autoLoginParent(studentId, systemData);
             } else {
                 alert("找不到此學號！請確認輸入是否正確。");
             }
+        }
+
+        function autoLoginParent(studentId, systemData) {
+            currentStudentId = studentId;
+            sessionStorage.setItem('ncm309_logged_student', studentId);
+
+            const student = systemData.students[studentId];
+            const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
+
+            document.getElementById('header-child-name').innerText = student.name;
+            document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
+            document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-heart text-rose-500"></i> ${cInfo.teacherName}老師給家長的話：`;
+
+            renderDashboard(student, systemData);
+
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
         }
 
         function renderDashboard(student, systemData) {
@@ -392,7 +399,8 @@
         function logout() {
             currentStudentId = null;
             sessionStorage.removeItem('ncm309_logged_student');
-            document.getElementById('login-student-id').value = '';
+            // 登出時保留或清除記住我皆可，此處保留讓家長下次點開仍可一鍵登入
+            document.getElementById('login-student-id').value = localStorage.getItem('ncm309_remembered_parent_id') || '';
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('app-header').classList.add('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
