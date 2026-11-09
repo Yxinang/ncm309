@@ -127,7 +127,6 @@
                     </div>
                 </div>
 
-                <!-- 歷史聯絡簿列表（內含刪除按鈕） -->
                 <div class="space-y-3 border-t border-amber-100 pt-4">
                     <h3 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-box-archive text-amber-500 mr-2"></i>歷史聯絡簿紀錄總覽（支援隨時刪除或修改）</h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="teacher-history-notes-list"></div>
@@ -323,6 +322,34 @@
             }
         }
 
+        // 取得台灣台北標準時間（民國年月日與星期）
+        function getTaiwanTaipeiDateString() {
+            const now = new Date();
+            const options = { 
+                timeZone: 'Asia/Taipei', 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric', 
+                weekday: 'long' 
+            };
+            const formatter = new Intl.DateTimeFormat('zh-TW', options);
+            const parts = formatter.formatToParts(now);
+            
+            let year = '';
+            let month = '';
+            let day = '';
+            let weekday = '';
+
+            parts.forEach(part => {
+                if (part.type === 'year') year = parseInt(part.value) - 1911;
+                if (part.type === 'month') month = part.value;
+                if (part.type === 'day') day = part.value;
+                if (part.type === 'weekday') weekday = part.value;
+            });
+
+            return `民國 ${year} 年 ${month} 月 ${day} 日 (${weekday})`;
+        }
+
         function generateDefaultData() {
             const names = [
                 "黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", 
@@ -359,7 +386,7 @@
             const defaultNotesList = [
                 {
                     id: defaultId,
-                    date: "民國 115 年 11 月 5 日 (星期四)",
+                    date: getTaiwanTaipeiDateString(),
                     content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
                     parentMessage: "本週三有戶外教學。",
                     reminder: "帶外套。"
@@ -648,7 +675,6 @@
             }
         }
 
-        // 刪除指定的某一天聯絡簿
         function deleteNote(id) {
             const systemData = getSystemData();
             if (systemData.notesList.length <= 1) {
@@ -658,7 +684,6 @@
 
             if (confirm("確定要刪除這篇聯絡簿嗎？")) {
                 systemData.notesList = systemData.notesList.filter(n => n.id !== id);
-                // 如果刪除的是當前啟動的，自動切換到第一篇
                 if (systemData.activeNoteId === id) {
                     systemData.activeNoteId = systemData.notesList[0].id;
                 }
@@ -690,8 +715,7 @@
 
         function prepareNewNote() {
             editingNoteId = 'new';
-            const now = new Date();
-            document.getElementById('note-date').value = `民國 115 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 (星期三)`;
+            document.getElementById('note-date').value = getTaiwanTaipeiDateString();
             document.getElementById('note-content').value = "";
             document.getElementById('note-parent-message').value = "";
             document.getElementById('note-reminder').value = "";
@@ -721,7 +745,7 @@
             }
 
             const updatedNoteData = {
-                date: dateVal || "民國 115 年 11 月 5 日 (星期四)",
+                date: dateVal || getTaiwanTaipeiDateString(),
                 content: contentVal,
                 parentMessage: document.getElementById('note-parent-message').value,
                 reminder: document.getElementById('note-reminder').value
@@ -800,7 +824,7 @@
             event.preventDefault();
             const studentId = document.getElementById('inj-student-id').value;
             const newInjury = {
-                date: "民國 115 年 11 月 5 日",
+                date: getTaiwanTaipeiDateString(),
                 time: document.getElementById('inj-time').value,
                 location: document.getElementById('inj-location').value,
                 symptom: document.getElementById('inj-symptom').value,
