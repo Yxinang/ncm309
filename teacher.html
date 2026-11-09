@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <!-- 2. 聯絡簿內容與刪除/修改管理 -->
+            <!-- 2. 聯絡簿內容與管理 -->
             <div id="section-note" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-6 max-w-xl mx-auto hidden">
                 <div class="space-y-4 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/80">
                     <div class="flex justify-between items-center border-b border-amber-200/60 pb-2">
@@ -108,7 +108,7 @@
                     
                     <div class="space-y-3 text-xs">
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">📅 自訂聯絡簿時間（可自由修改年月日與星期）</label>
+                            <label class="block font-bold text-amber-900/80 mb-1">📅 自訂聯絡簿時間（系統將依台北時間自動對應正確星期）</label>
                             <input type="text" id="note-date" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white" placeholder="例如：民國 115 年 11 月 5 日 (星期四)">
                         </div>
                         <div>
@@ -322,9 +322,13 @@
             }
         }
 
-        // 取得台灣台北標準時間（民國年月日與星期）
+        // 取得台灣台北標準時間（民國年月日與精準對應星期）
         function getTaiwanTaipeiDateString() {
             const now = new Date();
+            return formatTaiwanTaipeiDate(now);
+        }
+
+        function formatTaiwanTaipeiDate(dateObj) {
             const options = { 
                 timeZone: 'Asia/Taipei', 
                 year: 'numeric', 
@@ -333,7 +337,7 @@
                 weekday: 'long' 
             };
             const formatter = new Intl.DateTimeFormat('zh-TW', options);
-            const parts = formatter.formatToParts(now);
+            const parts = formatter.formatToParts(dateObj);
             
             let year = '';
             let month = '';
@@ -348,6 +352,26 @@
             });
 
             return `民國 ${year} 年 ${month} 月 ${day} 日 (${weekday})`;
+        }
+
+        // 核心功能：當老師在日期欄位手動輸入或點擊按鈕時，自動解析並換算正確的星期
+        function parseAndCorrectDateString(inputStr) {
+            if (!inputStr) return getTaiwanTaipeiDateString();
+            
+            // 嘗試從字串中擷取民國或西元年、月、日
+            const match = inputStr.match(/(?:民國\s*(\d+)\s*年)?\s*(\d+)\s*月\s*(\d+)\s*日/);
+            if (match) {
+                let year = match[1] ? parseInt(match[1]) + 1911 : new Date().getFullYear();
+                let month = parseInt(match[2]) - 1; // JS 月份從 0 開始
+                let day = parseInt(match[3]);
+
+                // 建立該日期的物件並自動計算正確星期
+                const targetDate = new Date(year, month, day);
+                if (!isNaN(targetDate.getTime())) {
+                    return formatTaiwanTaipeiDate(targetDate);
+                }
+            }
+            return inputStr; // 若無法解析則回傳原字串
         }
 
         function generateDefaultData() {
@@ -719,7 +743,7 @@
             document.getElementById('note-content').value = "";
             document.getElementById('note-parent-message').value = "";
             document.getElementById('note-reminder').value = "";
-            alert("已準備好發布新的一天聯絡簿！填寫完畢後點擊下方儲存即可。");
+            alert("已準備好發布新的一天聯絡簿！系統已自動帶入正確的台北標準日期與星期。");
         }
 
         function updateHomework(studentId, noteId, hwIndex, newStatus) {
@@ -737,15 +761,18 @@
         function saveContactNote() {
             const systemData = getSystemData();
             const contentVal = document.getElementById('note-content').value.trim();
-            const dateVal = document.getElementById('note-date').value.trim();
+            const rawDateVal = document.getElementById('note-date').value.trim();
 
             if (!contentVal) {
                 alert("聯絡簿抄寫內容不得為空白，避免資料被清空！");
                 return;
             }
 
+            // 自動校正並對應正確的星期
+            const correctedDateStr = parseAndCorrectDateString(rawDateVal);
+
             const updatedNoteData = {
-                date: dateVal || getTaiwanTaipeiDateString(),
+                date: correctedDateStr,
                 content: contentVal,
                 parentMessage: document.getElementById('note-parent-message').value,
                 reminder: document.getElementById('note-reminder').value
@@ -769,7 +796,7 @@
             }
             
             saveSystemData(systemData);
-            alert("聯絡簿與對應作業已成功儲存與更新！");
+            alert(`聯絡簿已成功儲存！日期已自動校正為：${correctedDateStr}`);
             loadTeacherData();
         }
 
