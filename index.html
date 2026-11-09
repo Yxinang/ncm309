@@ -266,10 +266,10 @@
         function renderDashboard(student, systemData) {
             const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
             
-            document.getElementById('note-display-date').innerText = activeNote.date;
-            document.getElementById('note-display-content').innerText = activeNote.content;
-            document.getElementById('note-display-message').innerText = activeNote.parentMessage || "尚無留言";
-            document.getElementById('note-display-reminder').innerText = activeNote.reminder || "";
+            document.getElementById('note-display-date').innerText = activeNote ? activeNote.date : "無日期";
+            document.getElementById('note-display-content').innerText = activeNote ? activeNote.content : "目前尚無聯絡簿內容";
+            document.getElementById('note-display-message').innerText = activeNote ? (activeNote.parentMessage || "尚無留言") : "尚無留言";
+            document.getElementById('note-display-reminder').innerText = activeNote ? (activeNote.reminder || "") : "";
 
             const statusMap = {
                 "1": { text: "繳交", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -278,15 +278,15 @@
                 "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-700 border-rose-200" }
             };
 
-            const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
-            const studentHwStatus = (student.homeworkStatus && student.homeworkStatus[activeNote.id]) || {};
-
             const hwContainer = document.getElementById('today-homework-list');
             hwContainer.innerHTML = '';
             
-            if (hwLines.length === 0) {
+            if (!activeNote || !activeNote.content) {
                 hwContainer.innerHTML = `<p class="text-center text-xs text-amber-800/60 py-2">本日無登記作業</p>`;
             } else {
+                const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
+                const studentHwStatus = (student.homeworkStatus && student.homeworkStatus[activeNote.id]) || {};
+
                 hwLines.forEach((line, idx) => {
                     const statusKey = studentHwStatus[idx] || "3";
                     const s = statusMap[statusKey];
@@ -299,8 +299,8 @@
                         </div>
                     `;
                 });
+                document.getElementById('homework-summary').innerText = `${hwLines.length} 項作業`;
             }
-            document.getElementById('homework-summary').innerText = `${hwLines.length} 項作業`;
 
             const injuryContainer = document.getElementById('today-injury-list');
             const historyContainer = document.getElementById('all-history-list');
