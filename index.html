@@ -134,7 +134,10 @@
     </footer>
 
     <script>
-        window.onload = function() {
+        const CLOUD_BIN_URL = 'https://api.jsonbin.io/v3/b/65f6c82d3dcbb1b7cc342831'; // 共用雲端同步通道
+
+        window.onload = async function() {
+            await syncLoadData();
             const systemData = getSystemData();
             if (systemData.classInfo) {
                 document.getElementById('login-title-display').innerText = `${systemData.classInfo.className} 溫馨平台`;
@@ -160,6 +163,22 @@
             }
         };
 
+        async function syncLoadData() {
+            try {
+                const response = await fetch(`${CLOUD_BIN_URL}/latest`, {
+                    headers: { 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' }
+                });
+                if (response.ok) {
+                    const cloudResult = await response.json();
+                    if (cloudResult && cloudResult.record) {
+                        localStorage.setItem('ncm309_school_data', JSON.stringify(cloudResult.record));
+                    }
+                }
+            } catch (e) {
+                console.log("使用本地快取資料");
+            }
+        }
+
         function getSystemData() {
             let data = localStorage.getItem('ncm309_school_data');
             const freshData = generateDefaultData();
@@ -183,84 +202,41 @@
             }
         }
 
-        // 取得台灣台北標準時間（民國年月日與星期）
         function getTaiwanTaipeiDateString() {
             const now = new Date();
-            const options = { 
-                timeZone: 'Asia/Taipei', 
-                year: 'numeric', 
-                month: 'numeric', 
-                day: 'numeric', 
-                weekday: 'long' 
-            };
+            const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'long' };
             const formatter = new Intl.DateTimeFormat('zh-TW', options);
             const parts = formatter.formatToParts(now);
             
-            let year = '';
-            let month = '';
-            let day = '';
-            let weekday = '';
-
+            let year = '', month = '', day = '', weekday = '';
             parts.forEach(part => {
                 if (part.type === 'year') year = parseInt(part.value) - 1911;
                 if (part.type === 'month') month = part.value;
                 if (part.type === 'day') day = part.value;
                 if (part.type === 'weekday') weekday = part.value;
             });
-
             return `民國 ${year} 年 ${month} 月 ${day} 日 (${weekday})`;
         }
 
         function generateDefaultData() {
-            const names = [
-                "黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", 
-                "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", 
-                "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", 
-                "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", 
-                "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"
-            ];
-            const ids = [
-                "113056", "113058", "113164", "113166", "113245", 
-                "113140", "113248", "113010", "113037", "113279", 
-                "113123", "113200", "113015", "113017", "113151", 
-                "113284", "113178", "113204", "113021", "113205", 
-                "113232", "113208", "113129", "113134", "113212"
-            ];
+            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
+            const ids = ["113056", "113058", "113164", "113166", "113245", "113140", "113248", "113010", "113037", "113279", "113123", "113200", "113015", "113017", "113151", "113284", "113178", "113204", "113021", "113205", "113232", "113208", "113129", "113134", "113212"];
             let students = {};
             ids.forEach((id, index) => {
-                let seatNum = String(index + 1);
-                students[id] = {
-                    name: names[index],
-                    seat: seatNum,
-                    homeworkStatus: {},
-                    injuries: []
-                };
+                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, injuries: [] };
             });
-            students["123"] = {
-                name: "測試帳號",
-                seat: "30",
-                homeworkStatus: {},
-                injuries: []
-            };
+            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, injuries: [] };
 
             const defaultId = new Date().toISOString();
-            const defaultNotesList = [
-                {
-                    id: defaultId,
-                    date: getTaiwanTaipeiDateString(),
-                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
-                    parentMessage: "本週三有戶外教學。",
-                    reminder: "帶外套。"
-                }
-            ];
+            const defaultNotesList = [{
+                id: defaultId,
+                date: getTaiwanTaipeiDateString(),
+                content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
+                parentMessage: "本週三有戶外教學。",
+                reminder: "帶外套。"
+            }];
 
-            return {
-                students: students,
-                classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
-                notesList: defaultNotesList,
-                activeNoteId: defaultId,
-                teacherAuth: { user: "nini309", pass: "20010909" }
-            };
+            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId, teacherAuth: { user: "nini309", pass: "20010909" } };
         }
 
         let currentStudentId = null;
@@ -321,9 +297,7 @@
                     hwContainer.innerHTML += `
                         <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50/40 border border-amber-100 text-xs">
                             <span class="font-medium text-slate-700">${line}</span>
-                            <span class="px-3 py-1 rounded-full font-bold border ${s.color}">
-                                ${s.text}
-                            </span>
+                            <span class="px-3 py-1 rounded-full font-bold border ${s.color}">${s.text}</span>
                         </div>
                     `;
                 });
@@ -386,7 +360,7 @@
             historyContainer.innerHTML = historyHtml;
         }
 
-        function confirmInjury(injuryIndex) {
+        async function confirmInjury(injuryIndex) {
             const systemData = getSystemData();
             const now = new Date();
             const timeString = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -395,6 +369,14 @@
             systemData.students[currentStudentId].injuries[injuryIndex].confirmTime = timeString;
             
             localStorage.setItem('ncm309_school_data', JSON.stringify(systemData));
+            try {
+                await fetch(CLOUD_BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' },
+                    body: JSON.stringify(systemData)
+                });
+            } catch(e) {}
+
             alert("已成功回報學校：確認收到傷病通知！");
             renderDashboard(systemData.students[currentStudentId], systemData);
         }
