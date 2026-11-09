@@ -279,9 +279,11 @@
     </div>
 
     <script>
+        const CLOUD_BIN_URL = 'https://api.jsonbin.io/v3/b/65f6c82d3dcbb1b7cc342831';
         let editingNoteId = null;
 
-        window.onload = function() {
+        window.onload = async function() {
+            await syncLoadData();
             const savedUser = localStorage.getItem('ncm309_remembered_user');
             const savedPass = localStorage.getItem('ncm309_remembered_pass');
             if (savedUser && savedPass) {
@@ -297,6 +299,35 @@
                 loadTeacherData();
             }
         };
+
+        async function syncLoadData() {
+            try {
+                const response = await fetch(`${CLOUD_BIN_URL}/latest`, {
+                    headers: { 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' }
+                });
+                if (response.ok) {
+                    const cloudResult = await response.json();
+                    if (cloudResult && cloudResult.record) {
+                        localStorage.setItem('ncm309_school_data', JSON.stringify(cloudResult.record));
+                    }
+                }
+            } catch (e) {
+                console.log("使用本地快取資料");
+            }
+        }
+
+        async function saveSystemData(data) {
+            localStorage.setItem('ncm309_school_data', JSON.stringify(data));
+            try {
+                await fetch(CLOUD_BIN_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' },
+                    body: JSON.stringify(data)
+                });
+            } catch (e) {
+                console.log("雲端同步失敗，已儲存於本地");
+            }
+        }
 
         function getSystemData() {
             let data = localStorage.getItem('ncm309_school_data');
@@ -322,112 +353,60 @@
             }
         }
 
-        // 取得台灣台北標準時間（民國年月日與精準對應星期）
         function getTaiwanTaipeiDateString() {
             const now = new Date();
             return formatTaiwanTaipeiDate(now);
         }
 
         function formatTaiwanTaipeiDate(dateObj) {
-            const options = { 
-                timeZone: 'Asia/Taipei', 
-                year: 'numeric', 
-                month: 'numeric', 
-                day: 'numeric', 
-                weekday: 'long' 
-            };
+            const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'long' };
             const formatter = new Intl.DateTimeFormat('zh-TW', options);
             const parts = formatter.formatToParts(dateObj);
             
-            let year = '';
-            let month = '';
-            let day = '';
-            let weekday = '';
-
+            let year = '', month = '', day = '', weekday = '';
             parts.forEach(part => {
                 if (part.type === 'year') year = parseInt(part.value) - 1911;
                 if (part.type === 'month') month = part.value;
                 if (part.type === 'day') day = part.value;
                 if (part.type === 'weekday') weekday = part.value;
             });
-
             return `民國 ${year} 年 ${month} 月 ${day} 日 (${weekday})`;
         }
 
-        // 核心功能：當老師在日期欄位手動輸入或點擊按鈕時，自動解析並換算正確的星期
         function parseAndCorrectDateString(inputStr) {
             if (!inputStr) return getTaiwanTaipeiDateString();
-            
-            // 嘗試從字串中擷取民國或西元年、月、日
             const match = inputStr.match(/(?:民國\s*(\d+)\s*年)?\s*(\d+)\s*月\s*(\d+)\s*日/);
             if (match) {
                 let year = match[1] ? parseInt(match[1]) + 1911 : new Date().getFullYear();
-                let month = parseInt(match[2]) - 1; // JS 月份從 0 開始
+                let month = parseInt(match[2]) - 1;
                 let day = parseInt(match[3]);
-
-                // 建立該日期的物件並自動計算正確星期
                 const targetDate = new Date(year, month, day);
                 if (!isNaN(targetDate.getTime())) {
                     return formatTaiwanTaipeiDate(targetDate);
                 }
             }
-            return inputStr; // 若無法解析則回傳原字串
+            return inputStr;
         }
 
         function generateDefaultData() {
-            const names = [
-                "黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", 
-                "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", 
-                "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", 
-                "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", 
-                "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"
-            ];
-            const ids = [
-                "113056", "113058", "113164", "113166", "113245", 
-                "113140", "113248", "113010", "113037", "113279", 
-                "113123", "113200", "113015", "113017", "113151", 
-                "113284", "113178", "113204", "113021", "113205", 
-                "113232", "113208", "113129", "113134", "113212"
-            ];
+            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
+            const ids = ["113056", "113058", "113164", "113166", "113245", "113140", "113248", "113010", "113037", "113279", "113123", "113200", "113015", "113017", "113151", "113284", "113178", "113204", "113021", "113205", "113232", "113208", "113129", "113134", "113212"];
             let students = {};
             ids.forEach((id, index) => {
-                let seatNum = String(index + 1);
-                students[id] = {
-                    name: names[index],
-                    seat: seatNum,
-                    homeworkStatus: {},
-                    injuries: []
-                };
+                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, injuries: [] };
             });
-            students["123"] = {
-                name: "測試帳號",
-                seat: "30",
-                homeworkStatus: {},
-                injuries: []
-            };
+            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, injuries: [] };
 
             const defaultId = new Date().toISOString();
-            const defaultNotesList = [
-                {
-                    id: defaultId,
-                    date: getTaiwanTaipeiDateString(),
-                    content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
-                    parentMessage: "本週三有戶外教學。",
-                    reminder: "帶外套。"
-                }
-            ];
+            const defaultNotesList = [{
+                id: defaultId,
+                date: getTaiwanTaipeiDateString(),
+                content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
+                parentMessage: "本週三有戶外教學。",
+                reminder: "帶外套。"
+            }];
 
-            return {
-                students: students,
-                classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" },
-                notesList: defaultNotesList,
-                activeNoteId: defaultId,
-                teacherAuth: { user: "nini309", pass: "20010909" }
-            };
-        }
-
-        function saveSystemData(data) {
-            localStorage.setItem('ncm309_school_data', JSON.stringify(data));
+            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId, teacherAuth: { user: "nini309", pass: "20010909" } };
         }
 
         function directLogin() {
@@ -505,7 +484,6 @@
 
             sortedIds.forEach(id => {
                 const student = systemData.students[id];
-                
                 selectStudent.innerHTML += `<option value="${id}">${student.seat} 號 - ${student.name} (學號: ${id})</option>`;
 
                 let rowHtml = `<tr class="hover:bg-amber-50/40"><td class="p-3 font-bold text-amber-900">${student.seat} 號 - ${student.name} <span class="text-xs text-amber-800/50">(${id})</span></td>`;
@@ -533,12 +511,8 @@
 
                 rowHtml += `
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '1')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">
-                            全部繳交
-                        </button>
-                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '3')" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">
-                            全部未繳交
-                        </button>
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '1')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">全部繳交</button>
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '3')" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">全部未繳交</button>
                     </td>
                 `;
 
@@ -581,13 +555,9 @@
                                 <p class="text-slate-700">地點：${inj.location} | 狀況：${inj.symptom}</p>
                                 <p class="text-slate-600 bg-white p-2.5 rounded-xl border border-amber-100">處置：${inj.treatment}</p>
                                 <div class="flex justify-end gap-2 pt-1 border-t border-amber-200/60">
-                                    <button onclick="openInjuryEdit('${id}', ${injIndex})" class="bg-amber-200/80 hover:bg-amber-300 text-amber-900 px-3 py-1 rounded-xl font-bold transition">
-                                        <i class="fa-solid fa-pen mr-1"></i> 修改
-                                    </button>
+                                    <button onclick="openInjuryEdit('${id}', ${injIndex})" class="bg-amber-200/80 hover:bg-amber-300 text-amber-900 px-3 py-1 rounded-xl font-bold transition"><i class="fa-solid fa-pen mr-1"></i> 修改</button>
                                     ${!isConfirmed ? `
-                                        <button onclick="deleteInjury('${id}', ${injIndex})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1 rounded-xl font-bold transition">
-                                            <i class="fa-solid fa-trash mr-1"></i> 刪除
-                                        </button>
+                                        <button onclick="deleteInjury('${id}', ${injIndex})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1 rounded-xl font-bold transition"><i class="fa-solid fa-trash mr-1"></i> 刪除</button>
                                     ` : `
                                         <span class="text-slate-400 italic text-[11px] self-center">（家長已確認，無法刪除）</span>
                                     `}
@@ -606,14 +576,12 @@
         function openInjuryEdit(studentId, injIndex) {
             const systemData = getSystemData();
             const inj = systemData.students[studentId].injuries[injIndex];
-
             document.getElementById('edit-inj-student-id').value = studentId;
             document.getElementById('edit-inj-index').value = injIndex;
             document.getElementById('edit-inj-time').value = inj.time;
             document.getElementById('edit-inj-location').value = inj.location;
             document.getElementById('edit-inj-symptom').value = inj.symptom;
             document.getElementById('edit-inj-treatment').value = inj.treatment;
-
             document.getElementById('injury-edit-modal').classList.remove('hidden');
         }
 
@@ -621,7 +589,7 @@
             document.getElementById('injury-edit-modal').classList.add('hidden');
         }
 
-        function saveInjuryEdit() {
+        async function saveInjuryEdit() {
             const studentId = document.getElementById('edit-inj-student-id').value;
             const injIndex = parseInt(document.getElementById('edit-inj-index').value);
 
@@ -631,13 +599,13 @@
             systemData.students[studentId].injuries[injIndex].symptom = document.getElementById('edit-inj-symptom').value;
             systemData.students[studentId].injuries[injIndex].treatment = document.getElementById('edit-inj-treatment').value;
 
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             closeInjuryEditModal();
             alert("傷病通知單已成功修改更新！");
             loadTeacherData();
         }
 
-        function deleteInjury(studentId, injIndex) {
+        async function deleteInjury(studentId, injIndex) {
             const systemData = getSystemData();
             if (systemData.students[studentId].injuries[injIndex].confirmed) {
                 alert("此筆傷病通知家長已經確認收到，無法刪除！");
@@ -645,30 +613,26 @@
             }
             if (confirm("確定要刪除這筆傷病通知紀錄嗎？")) {
                 systemData.students[studentId].injuries.splice(injIndex, 1);
-                saveSystemData(systemData);
+                await saveSystemData(systemData);
                 alert("傷病通知紀錄已成功刪除！");
                 loadTeacherData();
             }
         }
 
-        function setAllStatusForStudent(studentId, noteId, totalHwCount, targetStatus) {
+        async function setAllStatusForStudent(studentId, noteId, totalHwCount, targetStatus) {
             if (totalHwCount === 0) {
                 alert("目前沒有作業項目可供設定！");
                 return;
             }
             const systemData = getSystemData();
-            if (!systemData.students[studentId].homeworkStatus) {
-                systemData.students[studentId].homeworkStatus = {};
-            }
-            if (!systemData.students[studentId].homeworkStatus[noteId]) {
-                systemData.students[studentId].homeworkStatus[noteId] = {};
-            }
+            if (!systemData.students[studentId].homeworkStatus) systemData.students[studentId].homeworkStatus = {};
+            if (!systemData.students[studentId].homeworkStatus[noteId]) systemData.students[studentId].homeworkStatus[noteId] = {};
 
             for (let i = 0; i < totalHwCount; i++) {
                 systemData.students[studentId].homeworkStatus[noteId][i] = targetStatus;
             }
 
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             loadTeacherData();
         }
 
@@ -699,7 +663,7 @@
             }
         }
 
-        function deleteNote(id) {
+        async function deleteNote(id) {
             const systemData = getSystemData();
             if (systemData.notesList.length <= 1) {
                 alert("至少需要保留一篇聯絡簿，無法全部刪除！");
@@ -711,16 +675,16 @@
                 if (systemData.activeNoteId === id) {
                     systemData.activeNoteId = systemData.notesList[0].id;
                 }
-                saveSystemData(systemData);
+                await saveSystemData(systemData);
                 alert("聯絡簿已成功刪除！");
                 loadTeacherData();
             }
         }
 
-        function setActiveNote(id) {
+        async function setActiveNote(id) {
             const systemData = getSystemData();
             systemData.activeNoteId = id;
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             loadTeacherData();
             alert("已成功切換當前顯示的聯絡簿！作業區已同步更新。");
         }
@@ -746,19 +710,15 @@
             alert("已準備好發布新的一天聯絡簿！系統已自動帶入正確的台北標準日期與星期。");
         }
 
-        function updateHomework(studentId, noteId, hwIndex, newStatus) {
+        async function updateHomework(studentId, noteId, hwIndex, newStatus) {
             const systemData = getSystemData();
-            if (!systemData.students[studentId].homeworkStatus) {
-                systemData.students[studentId].homeworkStatus = {};
-            }
-            if (!systemData.students[studentId].homeworkStatus[noteId]) {
-                systemData.students[studentId].homeworkStatus[noteId] = {};
-            }
+            if (!systemData.students[studentId].homeworkStatus) systemData.students[studentId].homeworkStatus = {};
+            if (!systemData.students[studentId].homeworkStatus[noteId]) systemData.students[studentId].homeworkStatus[noteId] = {};
             systemData.students[studentId].homeworkStatus[noteId][hwIndex] = newStatus;
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
         }
 
-        function saveContactNote() {
+        async function saveContactNote() {
             const systemData = getSystemData();
             const contentVal = document.getElementById('note-content').value.trim();
             const rawDateVal = document.getElementById('note-date').value.trim();
@@ -768,7 +728,6 @@
                 return;
             }
 
-            // 自動校正並對應正確的星期
             const correctedDateStr = parseAndCorrectDateString(rawDateVal);
 
             const updatedNoteData = {
@@ -795,12 +754,12 @@
                 }
             }
             
-            saveSystemData(systemData);
-            alert(`聯絡簿已成功儲存！日期已自動校正為：${correctedDateStr}`);
+            await saveSystemData(systemData);
+            alert(`聯絡簿已成功儲存與雲端同步！日期已自動校正為：${correctedDateStr}`);
             loadTeacherData();
         }
 
-        function addNewStudent() {
+        async function addNewStudent() {
             const seat = document.getElementById('new-seat').value.trim();
             const name = document.getElementById('new-name').value.trim();
             const id = document.getElementById('new-id').value.trim();
@@ -811,14 +770,9 @@
             }
 
             const systemData = getSystemData();
-            systemData.students[id] = {
-                name: name,
-                seat: seat,
-                homeworkStatus: {},
-                injuries: []
-            };
+            systemData.students[id] = { name: name, seat: seat, homeworkStatus: {}, injuries: [] };
 
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             alert(`已成功新增/更新學生：${seat} 號 ${name}！`);
             document.getElementById('new-seat').value = '';
             document.getElementById('new-name').value = '';
@@ -826,28 +780,28 @@
             loadTeacherData();
         }
 
-        function deleteStudent(id) {
+        async function deleteStudent(id) {
             if (confirm("確定要刪除這位學生嗎？")) {
                 const systemData = getSystemData();
                 delete systemData.students[id];
-                saveSystemData(systemData);
+                await saveSystemData(systemData);
                 loadTeacherData();
             }
         }
 
-        function saveClassSettings() {
+        async function saveClassSettings() {
             const systemData = getSystemData();
             systemData.classInfo = {
                 schoolName: document.getElementById('setting-school').value.trim(),
                 className: document.getElementById('setting-classname').value.trim(),
                 teacherName: document.getElementById('setting-teacher').value.trim()
             };
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             alert("班級基本設定已成功儲存！");
             loadTeacherData();
         }
 
-        function submitInjuryNotice(event) {
+        async function submitInjuryNotice(event) {
             event.preventDefault();
             const studentId = document.getElementById('inj-student-id').value;
             const newInjury = {
@@ -862,11 +816,9 @@
             };
 
             const systemData = getSystemData();
-            if (!systemData.students[studentId].injuries) {
-                systemData.students[studentId].injuries = [];
-            }
+            if (!systemData.students[studentId].injuries) systemData.students[studentId].injuries = [];
             systemData.students[studentId].injuries.unshift(newInjury);
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             alert("傷病通知單已成功發送！");
             loadTeacherData();
         }
@@ -882,7 +834,7 @@
             document.getElementById('password-modal').classList.add('hidden');
         }
 
-        function saveNewCredentials() {
+        async function saveNewCredentials() {
             const newUser = document.getElementById('new-user').value.trim();
             const newPass = document.getElementById('new-pass').value.trim();
             if (!newUser || !newPass) {
@@ -892,7 +844,7 @@
             const systemData = getSystemData();
             systemData.teacherAuth.user = newUser;
             systemData.teacherAuth.pass = newPass;
-            saveSystemData(systemData);
+            await saveSystemData(systemData);
             alert("教師帳號密碼已成功更新！");
             closeChangePasswordModal();
         }
