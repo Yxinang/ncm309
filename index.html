@@ -61,23 +61,25 @@
             </div>
         </section>
 
-        <!-- 儀表板畫面 -->
+        <!-- 儀表板主畫面 -->
         <div id="dashboard-section" class="hidden space-y-6">
             <div class="flex bg-amber-100/60 p-1 rounded-2xl border border-amber-200/60">
                 <button onclick="switchTab('today')" id="tab-today" class="flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition">
-                    <i class="fa-solid fa-sun mr-1"></i> 今日聯絡簿與狀況
+                    <i class="fa-solid fa-sun mr-1"></i> 首頁 (聯絡簿與作業)
                 </button>
-                <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition">
-                    <i class="fa-solid fa-book-open mr-1"></i> 歷史點滴紀錄
+                <button onclick="switchTab('injury')" id="tab-injury" class="flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition">
+                    <i class="fa-solid fa-notes-medical mr-1"></i> 傷病通知紀錄
                 </button>
             </div>
 
+            <!-- 第一頁：聯絡簿與作業四大區塊 -->
             <div id="view-today" class="space-y-6">
-                <!-- 聯絡簿抄寫內容 -->
+                
+                <!-- 第一區塊：當天聯絡簿內容與老師提醒 -->
                 <section class="bg-gradient-to-br from-amber-50 to-orange-50/50 rounded-3xl p-5 shadow-sm border border-amber-200/80 space-y-3">
                     <div class="flex justify-between items-center border-b border-amber-200/60 pb-2">
                         <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-star text-amber-500"></i> 聯絡簿抄寫內容
+                            <i class="fa-solid fa-star text-amber-500"></i> 第一區塊：當天聯絡簿內容
                         </h2>
                         <span class="text-[11px] text-amber-800 font-bold bg-amber-200/50 px-2.5 py-0.5 rounded-full" id="note-display-date">載入中...</span>
                     </div>
@@ -87,7 +89,7 @@
                     
                     <div class="bg-amber-100/70 p-3.5 rounded-2xl border border-amber-200/60 space-y-1">
                         <p class="text-[11px] font-bold text-amber-900 flex items-center gap-1" id="note-teacher-label">
-                            <i class="fa-solid fa-heart text-rose-500"></i> 老師給家長的話：
+                            <i class="fa-solid fa-heart text-rose-500"></i> 老師提醒 / 給家長的話：
                         </p>
                         <p class="text-xs text-amber-950 font-medium leading-relaxed pl-4" id="note-display-message">尚無留言</p>
                     </div>
@@ -98,37 +100,57 @@
                     </div>
                 </section>
 
-                <!-- 作業狀況 -->
-                <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-pencil text-amber-500"></i> 作業繳交與訂正狀況
-                        </h2>
-                        <span class="text-xs text-amber-800 font-bold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200" id="homework-summary">0 筆</span>
-                    </div>
-                    <div class="space-y-2.5" id="today-homework-list"></div>
-                </section>
-
-                <!-- 傷病通知 -->
-                <section class="bg-white rounded-3xl p-5 shadow-sm border border-rose-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="font-bold text-rose-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-hand-holding-medical text-rose-500"></i> 專屬傷病通知記錄
-                        </h2>
-                        <span class="text-xs text-rose-700 font-bold bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200" id="today-injury-count">0 筆</span>
-                    </div>
-                    <div class="space-y-3" id="today-injury-list"></div>
-                </section>
-            </div>
-
-            <!-- 所有歷史紀錄 -->
-            <div id="view-history" class="space-y-6 hidden">
+                <!-- 第二區塊：昨天聯絡簿內容 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-3">
                     <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
-                        <i class="fa-solid fa-box-archive text-amber-500"></i> 歷史聯絡簿與作業追蹤紀錄
+                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> 第二區塊：昨天聯絡簿內容
                     </h2>
-                    <div class="space-y-3" id="all-history-list"></div>
+                    <div class="bg-amber-50/40 p-4 rounded-2xl border border-amber-100" id="yesterday-note-content">
+                        <p class="text-xs text-slate-400 text-center py-2">昨日無上一個聯絡簿紀錄</p>
+                    </div>
                 </section>
+
+                <!-- 第三區塊：昨天作業今天繳交狀態 -->
+                <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-3">
+                    <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
+                        <i class="fa-solid fa-list-check text-amber-500"></i> 第三區塊：昨天作業今天到校繳交狀態
+                    </h2>
+                    <div class="space-y-2.5" id="yesterday-homework-list">
+                        <p class="text-xs text-slate-400 text-center py-2">昨日無登記作業狀態</p>
+                    </div>
+                </section>
+
+                <!-- 第四區塊：需家長協助完成之作業 -->
+                <section class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-5 shadow-sm border border-orange-200 space-y-3">
+                    <h2 class="font-bold text-orange-900 text-sm flex items-center gap-2 border-b border-orange-200 pb-2">
+                        <i class="fa-solid fa-hands-holding-child text-orange-500"></i> 第四區塊：需家長協助完成之作業 / 親子共學
+                    </h2>
+                    <div class="bg-white/90 p-4 rounded-2xl border border-orange-100 text-xs" id="parent-assist-homework-list">
+                        <p class="text-slate-500 text-center py-1">目前無特別需家長協助之項目 ✨</p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 第二頁：傷病通知的紀錄（雙區塊：未確認 vs 已確認） -->
+            <div id="view-injury" class="space-y-6 hidden">
+                
+                <!-- 第一區塊：老師上傳，家長未確認 -->
+                <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-200 space-y-4">
+                    <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
+                        <i class="fa-solid fa-clock text-amber-500"></i> 第一區塊：老師上傳，等待家長確認（<span id="pending-injury-count">0</span> 筆）
+                    </h2>
+                    <div class="space-y-3" id="pending-injury-list"></div>
+                </section>
+
+                <!-- 第二區塊：家長已確認區塊 -->
+                <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-4">
+                    <h2 class="font-bold text-emerald-900 text-sm flex items-center gap-2 border-b border-emerald-100 pb-2">
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i> 第二區塊：家長已確認收到紀錄（<span id="confirmed-injury-count">0</span> 筆）
+                    </h2>
+                    <div class="space-y-3" id="confirmed-injury-list"></div>
+                </section>
+
             </div>
         </div>
     </main>
@@ -149,13 +171,10 @@
                 document.getElementById('footer-school-name').innerText = `${systemData.classInfo.schoolName} • 溫馨守護每一刻 💛`;
             }
 
-            // 自動帶入或自動登入家長之前記住的學號
             const rememberedId = localStorage.getItem('ncm309_remembered_parent_id');
             if (rememberedId && systemData.students[rememberedId]) {
                 document.getElementById('login-student-id').value = rememberedId;
                 document.getElementById('parent-remember-me').checked = true;
-                
-                // 如果已經有勾選記住我，可以直接自動登入進入畫面
                 autoLoginParent(rememberedId, systemData);
             }
         };
@@ -265,7 +284,7 @@
 
             document.getElementById('header-child-name').innerText = student.name;
             document.getElementById('header-className-display').innerText = `${cInfo.className} • 座號 ${student.seat} 號`;
-            document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-heart text-rose-500"></i> ${cInfo.teacherName}老師給家長的話：`;
+            document.getElementById('note-teacher-label').innerHTML = `<i class="fa-solid fa-heart text-rose-500"></i> ${cInfo.teacherName}老師提醒 / 給家長的話：`;
 
             renderDashboard(student, systemData);
 
@@ -275,12 +294,35 @@
         }
 
         function renderDashboard(student, systemData) {
-            const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
-            
-            document.getElementById('note-display-date').innerText = activeNote ? activeNote.date : "無日期";
-            document.getElementById('note-display-content').innerText = activeNote ? activeNote.content : "目前尚無聯絡簿內容";
-            document.getElementById('note-display-message').innerText = activeNote ? (activeNote.parentMessage || "尚無留言") : "尚無留言";
-            document.getElementById('note-display-reminder').innerText = activeNote ? (activeNote.reminder || "") : "";
+            // 找到當前當天聯絡簿（在 notesList 中依序排列，第一個通常為最新）
+            const activeIndex = systemData.notesList.findIndex(n => n.id === systemData.activeNoteId);
+            const activeNote = activeIndex !== -1 ? systemData.notesList.activeIndex : systemData.notesList[0];
+            const yesterdayNote = systemData.notesList.length > 1 ? systemData.notesList[1] : null;
+
+            // 第一區塊：當天聯絡簿內容與老師提醒
+            if (activeNote) {
+                document.getElementById('note-display-date').innerText = activeNote.date;
+                document.getElementById('note-display-content').innerText = activeNote.content;
+                document.getElementById('note-display-message').innerText = activeNote.parentMessage || "尚無留言";
+                document.getElementById('note-display-reminder').innerText = activeNote.reminder || "無";
+            } else {
+                document.getElementById('note-display-date').innerText = "無日期";
+                document.getElementById('note-display-content').innerText = "目前尚無當天聯絡簿";
+                document.getElementById('note-display-message').innerText = "尚無留言";
+                document.getElementById('note-display-reminder').innerText = "無";
+            }
+
+            // 第二區塊：昨天聯絡簿內容
+            const yesterdayContainer = document.getElementById('yesterday-note-content');
+            if (yesterdayNote) {
+                yesterdayContainer.innerHTML = `
+                    <p class="font-bold text-amber-900 text-xs mb-1">📅 ${yesterdayNote.date}</p>
+                    <p class="text-xs text-slate-700 whitespace-pre-line">${yesterdayNote.content}</p>
+                    ${yesterdayNote.parentMessage ? `<p class="text-xs text-amber-900 mt-2 bg-amber-100/60 p-2 rounded-xl">老師的話：${yesterdayNote.parentMessage}</p>` : ''}
+                `;
+            } else {
+                yesterdayContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無上一個聯絡簿紀錄</p>`;
+            }
 
             const statusMap = {
                 "1": { text: "繳交", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -289,57 +331,93 @@
                 "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-700 border-rose-200" }
             };
 
-            const hwContainer = document.getElementById('today-homework-list');
-            hwContainer.innerHTML = '';
-            
-            if (!activeNote || !activeNote.content) {
-                hwContainer.innerHTML = `<p class="text-center text-xs text-amber-800/60 py-2">本日無登記作業</p>`;
-            } else {
-                const hwLines = activeNote.content.split('\n').filter(line => line.trim() !== '');
-                const studentHwStatus = (student.homeworkStatus && student.homeworkStatus[activeNote.id]) || {};
+            // 第三區塊：昨天作業今天繳交狀態
+            const yesterdayHwContainer = document.getElementById('yesterday-homework-list');
+            yesterdayHwContainer.innerHTML = '';
+            if (yesterdayNote && yesterdayNote.content) {
+                const yestHwLines = yesterdayNote.content.split('\n').filter(line => line.trim() !== '');
+                const yestStudentStatus = (student.homeworkStatus && student.homeworkStatus[yesterdayNote.id]) || {};
 
-                hwLines.forEach((line, idx) => {
-                    const statusKey = studentHwStatus[idx] || "3";
-                    const s = statusMap[statusKey];
-                    hwContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50/40 border border-amber-100 text-xs">
-                            <span class="font-medium text-slate-700">${line}</span>
-                            <span class="px-3 py-1 rounded-full font-bold border ${s.color}">${s.text}</span>
+                if (yestHwLines.length === 0) {
+                    yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無登記作業</p>`;
+                } else {
+                    yestHwLines.forEach((line, idx) => {
+                        const statusKey = yestStudentStatus[idx] || "3";
+                        const s = statusMap[statusKey];
+                        yesterdayHwContainer.innerHTML += `
+                            <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50/40 border border-amber-100 text-xs">
+                                <span class="font-medium text-slate-700">${line}</span>
+                                <span class="px-3 py-1 rounded-full font-bold border ${s.color}">${s.text}</span>
+                            </div>
+                        `;
+                    });
+                }
+            } else {
+                yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無作業狀態追蹤</p>`;
+            }
+
+            // 第四區塊：需家長協助完成之作業 (自動篩選帶有「家長」、「親子」、「簽名」、「協助」、「共學」等關鍵字之項目)
+            const parentAssistContainer = document.getElementById('parent-assist-homework-list');
+            parentAssistContainer.innerHTML = '';
+            let assistItems = [];
+            
+            systemData.notesList.forEach(note => {
+                if (note.content) {
+                    const lines = note.content.split('\n');
+                    lines.forEach((line, lineIdx) => {
+                        if (line.includes("家長") || line.includes("親子") || line.includes("簽名") || line.includes("協助") || line.includes("共學") || line.includes("帶")) {
+                            assistItems.push({ date: note.date, text: line });
+                        }
+                    });
+                }
+            });
+
+            if (assistItems.length === 0) {
+                parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2">目前無特別需家長協助之項目 ✨</p>`;
+            } else {
+                assistItems.slice(0, 3).forEach(item => {
+                    parentAssistContainer.innerHTML += `
+                        <div class="p-2.5 bg-orange-50/60 rounded-xl border border-orange-200 mb-2">
+                            <span class="font-bold text-orange-900">📌 (${item.date})</span>
+                            <p class="text-slate-700 mt-0.5">${item.text}</p>
                         </div>
                     `;
                 });
-                document.getElementById('homework-summary').innerText = `${hwLines.length} 項作業`;
             }
 
-            const injuryContainer = document.getElementById('today-injury-list');
-            const historyContainer = document.getElementById('all-history-list');
-            injuryContainer.innerHTML = '';
-            historyContainer.innerHTML = '';
-            document.getElementById('today-injury-count').innerText = `${student.injuries.length} 筆`;
+            // 第二頁：傷病通知紀錄（雙區塊：未確認 vs 已確認）
+            const pendingContainer = document.getElementById('pending-injury-list');
+            const confirmedContainer = document.getElementById('confirmed-injury-list');
+            pendingContainer.innerHTML = '';
+            confirmedContainer.innerHTML = '';
 
-            if (student.injuries.length === 0) {
-                injuryContainer.innerHTML = `<p class="text-center text-xs text-amber-800/60 py-3">近期寶貝身體健康，無傷病通知紀錄 🌸</p>`;
+            let pendingCount = 0;
+            let confirmedCount = 0;
+
+            if (!student.injuries || student.injuries.length === 0) {
+                pendingContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">目前無待確認的傷病通知 🌸</p>`;
+                confirmedContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">尚無已確認的傷病紀錄檔案</p>`;
             } else {
                 student.injuries.forEach((inj, index) => {
                     const isConfirmed = inj.confirmed === true;
-                    injuryContainer.innerHTML += `
-                        <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 text-xs space-y-2 shadow-sm">
+                    const htmlCard = `
+                        <div class="p-4 rounded-2xl ${isConfirmed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/60 border-rose-200'} border text-xs space-y-2 shadow-sm">
                             <div class="flex justify-between items-center">
-                                <span class="font-bold text-rose-700">${inj.date} ${inj.time}</span>
-                                <span class="text-rose-900/60">處理：${inj.nurse}</span>
+                                <span class="font-bold ${isConfirmed ? 'text-emerald-800' : 'text-rose-700'}">${inj.date} ${inj.time}</span>
+                                <span class="text-slate-600">處理：${inj.nurse}</span>
                             </div>
                             <div>
                                 <p class="font-bold text-slate-800">狀況：${inj.symptom}</p>
                                 <p class="text-slate-600 mt-0.5">地點：${inj.location}</p>
                             </div>
-                            <div class="bg-white p-3 rounded-xl border border-rose-100 text-slate-700">
-                                <p class="font-semibold text-rose-700">處理經過：</p>
+                            <div class="bg-white p-3 rounded-xl border ${isConfirmed ? 'border-emerald-100' : 'border-rose-100'} text-slate-700">
+                                <p class="font-semibold ${isConfirmed ? 'text-emerald-800' : 'text-rose-700'}">處理經過：</p>
                                 <p class="mt-0.5">${inj.treatment}</p>
                             </div>
-                            <div class="pt-2 border-t border-rose-200/60 flex justify-between items-center">
-                                <span class="text-[11px] ${isConfirmed ? 'text-emerald-700 font-bold' : 'text-amber-700'}">
+                            <div class="pt-2 border-t ${isConfirmed ? 'border-emerald-200/60' : 'border-rose-200/60'} flex justify-between items-center">
+                                <span class="text-[11px] ${isConfirmed ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'}">
                                     <i class="fa-solid ${isConfirmed ? 'fa-circle-check' : 'fa-clock'} mr-1"></i>
-                                    ${isConfirmed ? '已於 ' + inj.confirmTime + ' 確認收到' : '尚未確認收到'}
+                                    ${isConfirmed ? '已於 ' + inj.confirmTime + ' 確認收到' : '等待家長確認'}
                                 </span>
                                 ${!isConfirmed ? `
                                     <button onclick="confirmInjury(${index})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl shadow-sm transition text-[11px]">
@@ -351,20 +429,26 @@
                             </div>
                         </div>
                     `;
+
+                    if (isConfirmed) {
+                        confirmedCount++;
+                        confirmedContainer.innerHTML += htmlCard;
+                    } else {
+                        pendingCount++;
+                        pendingContainer.innerHTML += htmlCard;
+                    }
                 });
+
+                if (pendingCount === 0) {
+                    pendingContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">太棒了！所有傷病通知皆已確認完畢 ✨</p>`;
+                }
+                if (confirmedCount === 0) {
+                    confirmedContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">尚無已確認的傷病紀錄</p>`;
+                }
             }
 
-            let historyHtml = '';
-            systemData.notesList.forEach(note => {
-                historyHtml += `
-                    <div class="p-3.5 bg-amber-50/40 rounded-2xl border border-amber-200/60 text-xs space-y-1">
-                        <p class="font-bold text-amber-900">📜 聯絡簿紀錄 (${note.date})</p>
-                        <p class="text-slate-700 whitespace-pre-line mt-1">${note.content}</p>
-                        ${note.parentMessage ? `<p class="text-amber-900 bg-amber-100/60 p-2 rounded-xl mt-1.5">老師的話：${note.parentMessage}</p>` : ''}
-                    </div>
-                `;
-            });
-            historyContainer.innerHTML = historyHtml;
+            document.getElementById('pending-injury-count').innerText = pendingCount;
+            document.getElementById('confirmed-injury-count').innerText = confirmedCount;
         }
 
         async function confirmInjury(injuryIndex) {
@@ -390,16 +474,15 @@
 
         function switchTab(tab) {
             document.getElementById('tab-today').className = tab === 'today' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition";
-            document.getElementById('tab-history').className = tab === 'history' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition";
+            document.getElementById('tab-injury').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-amber-800/70 transition";
 
             document.getElementById('view-today').classList.toggle('hidden', tab !== 'today');
-            document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
+            document.getElementById('view-injury').classList.toggle('hidden', tab !== 'injury');
         }
 
         function logout() {
             currentStudentId = null;
             sessionStorage.removeItem('ncm309_logged_student');
-            // 登出時保留或清除記住我皆可，此處保留讓家長下次點開仍可一鍵登入
             document.getElementById('login-student-id').value = localStorage.getItem('ncm309_remembered_parent_id') || '';
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('app-header').classList.add('hidden');
