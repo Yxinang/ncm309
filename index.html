@@ -75,11 +75,11 @@
             <!-- 第一頁：聯絡簿與作業四大區塊 -->
             <div id="view-today" class="space-y-6">
                 
-                <!-- 第一區塊：當天聯絡簿內容與老師提醒 -->
+                <!-- 當天聯絡簿內容與老師提醒 -->
                 <section class="bg-gradient-to-br from-amber-50 to-orange-50/50 rounded-3xl p-5 shadow-sm border border-amber-200/80 space-y-3">
                     <div class="flex justify-between items-center border-b border-amber-200/60 pb-2">
                         <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-star text-amber-500"></i> 第一區塊：當天聯絡簿內容
+                            <i class="fa-solid fa-star text-amber-500"></i> 當天聯絡簿內容
                         </h2>
                         <span class="text-[11px] text-amber-800 font-bold bg-amber-200/50 px-2.5 py-0.5 rounded-full" id="note-display-date">載入中...</span>
                     </div>
@@ -100,30 +100,30 @@
                     </div>
                 </section>
 
-                <!-- 第二區塊：昨天聯絡簿內容 -->
+                <!-- 昨天聯絡簿內容 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-3">
                     <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
-                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> 第二區塊：昨天聯絡簿內容
+                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> 昨天聯絡簿內容
                     </h2>
                     <div class="bg-amber-50/40 p-4 rounded-2xl border border-amber-100" id="yesterday-note-content">
                         <p class="text-xs text-slate-400 text-center py-2">昨日無上一個聯絡簿紀錄</p>
                     </div>
                 </section>
 
-                <!-- 第三區塊：昨天作業今天繳交狀態 -->
+                <!-- 昨天作業今天繳交狀態 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-3">
                     <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
-                        <i class="fa-solid fa-list-check text-amber-500"></i> 第三區塊：昨天作業今天到校繳交狀態
+                        <i class="fa-solid fa-list-check text-amber-500"></i> 昨天作業今天到校繳交狀態
                     </h2>
                     <div class="space-y-2.5" id="yesterday-homework-list">
                         <p class="text-xs text-slate-400 text-center py-2">昨日無登記作業狀態</p>
                     </div>
                 </section>
 
-                <!-- 第四區塊：需家長協助完成之作業 -->
+                <!-- 需家長協助完成之作業 -->
                 <section class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-5 shadow-sm border border-orange-200 space-y-3">
                     <h2 class="font-bold text-orange-900 text-sm flex items-center gap-2 border-b border-orange-200 pb-2">
-                        <i class="fa-solid fa-hands-holding-child text-orange-500"></i> 第四區塊：需家長協助完成之作業 / 親子共學
+                        <i class="fa-solid fa-hands-holding-child text-orange-500"></i> 需家長協助完成之作業 / 親子共學
                     </h2>
                     <div class="bg-white/90 p-4 rounded-2xl border border-orange-100 text-xs" id="parent-assist-homework-list">
                         <p class="text-slate-500 text-center py-1">目前無特別需家長協助之項目 ✨</p>
@@ -132,21 +132,21 @@
 
             </div>
 
-            <!-- 第二頁：傷病通知的紀錄（雙區塊：未確認 vs 已確認） -->
+            <!-- 第二頁：傷病通知紀錄（雙區塊：未確認 vs 已確認） -->
             <div id="view-injury" class="space-y-6 hidden">
                 
-                <!-- 第一區塊：老師上傳，家長未確認 -->
+                <!-- 老師上傳，家長未確認 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-200 space-y-4">
                     <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
-                        <i class="fa-solid fa-clock text-amber-500"></i> 第一區塊：老師上傳，等待家長確認（<span id="pending-injury-count">0</span> 筆）
+                        <i class="fa-solid fa-clock text-amber-500"></i> 老師上傳，等待家長確認（<span id="pending-injury-count">0</span> 筆）
                     </h2>
                     <div class="space-y-3" id="pending-injury-list"></div>
                 </section>
 
-                <!-- 第二區塊：家長已確認區塊 -->
+                <!-- 家長已確認區塊 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-4">
                     <h2 class="font-bold text-emerald-900 text-sm flex items-center gap-2 border-b border-emerald-100 pb-2">
-                        <i class="fa-solid fa-circle-check text-emerald-500"></i> 第二區塊：家長已確認收到紀錄（<span id="confirmed-injury-count">0</span> 筆）
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i> 家長已確認收到紀錄（<span id="confirmed-injury-count">0</span> 筆）
                     </h2>
                     <div class="space-y-3" id="confirmed-injury-list"></div>
                 </section>
@@ -177,6 +177,17 @@
                 document.getElementById('parent-remember-me').checked = true;
                 autoLoginParent(rememberedId, systemData);
             }
+
+            // 開啟自動背景同步：每隔 10 秒自動向雲端檢查最新資料並更新畫面
+            setInterval(async () => {
+                await syncLoadData();
+                if (currentStudentId) {
+                    const latestData = getSystemData();
+                    if (latestData.students[currentStudentId]) {
+                        renderDashboard(latestData.students[currentStudentId], latestData);
+                    }
+                }
+            }, 10000);
         };
 
         async function syncLoadData() {
@@ -294,12 +305,11 @@
         }
 
         function renderDashboard(student, systemData) {
-            // 找到當前當天聯絡簿（在 notesList 中依序排列，第一個通常為最新）
-            const activeIndex = systemData.notesList.findIndex(n => n.id === systemData.activeNoteId);
-            const activeNote = activeIndex !== -1 ? systemData.notesList.activeIndex : systemData.notesList[0];
-            const yesterdayNote = systemData.notesList.length > 1 ? systemData.notesList[1] : null;
+            const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
+            const activeIndex = systemData.notesList.findIndex(n => n.id === (activeNote ? activeNote.id : ''));
+            const yesterdayNote = (activeIndex !== -1 && systemData.notesList.length > activeIndex + 1) ? systemData.notesList[activeIndex + 1] : (systemData.notesList.length > 1 ? systemData.notesList[1] : null);
 
-            // 第一區塊：當天聯絡簿內容與老師提醒
+            // 當天聯絡簿與老師提醒
             if (activeNote) {
                 document.getElementById('note-display-date').innerText = activeNote.date;
                 document.getElementById('note-display-content').innerText = activeNote.content;
@@ -312,7 +322,7 @@
                 document.getElementById('note-display-reminder').innerText = "無";
             }
 
-            // 第二區塊：昨天聯絡簿內容
+            // 昨天聯絡簿內容
             const yesterdayContainer = document.getElementById('yesterday-note-content');
             if (yesterdayNote) {
                 yesterdayContainer.innerHTML = `
@@ -331,7 +341,7 @@
                 "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-700 border-rose-200" }
             };
 
-            // 第三區塊：昨天作業今天繳交狀態
+            // 昨天作業今天繳交狀態
             const yesterdayHwContainer = document.getElementById('yesterday-homework-list');
             yesterdayHwContainer.innerHTML = '';
             if (yesterdayNote && yesterdayNote.content) {
@@ -356,7 +366,7 @@
                 yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無作業狀態追蹤</p>`;
             }
 
-            // 第四區塊：需家長協助完成之作業 (自動篩選帶有「家長」、「親子」、「簽名」、「協助」、「共學」等關鍵字之項目)
+            // 需家長協助完成之作業
             const parentAssistContainer = document.getElementById('parent-assist-homework-list');
             parentAssistContainer.innerHTML = '';
             let assistItems = [];
@@ -364,7 +374,7 @@
             systemData.notesList.forEach(note => {
                 if (note.content) {
                     const lines = note.content.split('\n');
-                    lines.forEach((line, lineIdx) => {
+                    lines.forEach((line) => {
                         if (line.includes("家長") || line.includes("親子") || line.includes("簽名") || line.includes("協助") || line.includes("共學") || line.includes("帶")) {
                             assistItems.push({ date: note.date, text: line });
                         }
@@ -385,7 +395,7 @@
                 });
             }
 
-            // 第二頁：傷病通知紀錄（雙區塊：未確認 vs 已確認）
+            // 第二頁：傷病通知紀錄（未確認 vs 已確認）
             const pendingContainer = document.getElementById('pending-injury-list');
             const confirmedContainer = document.getElementById('confirmed-injury-list');
             pendingContainer.innerHTML = '';
