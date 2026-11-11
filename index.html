@@ -193,6 +193,10 @@
                 if (response.ok) {
                     const cloudResult = await response.json();
                     if (cloudResult && cloudResult.record) {
+                        // 強制依據 id (ISO 時間戳記) 進行由新到舊排序，防止順序錯亂跳動
+                        if (cloudResult.record.notesList && Array.isArray(cloudResult.record.notesList)) {
+                            cloudResult.record.notesList.sort((a, b) => new Date(b.id) - new Date(a.id));
+                        }
                         localStorage.setItem('ncm309_school_data', JSON.stringify(cloudResult.record));
                     }
                 }
@@ -213,8 +217,13 @@
             try {
                 let parsed = JSON.parse(data);
                 if (!parsed.classInfo) parsed.classInfo = freshData.classInfo;
-                if (!parsed.notesList || parsed.notesList.length === 0) parsed.notesList = freshData.notesList;
-                if (!parsed.activeNoteId) parsed.activeNoteId = freshData.activeNoteId;
+                if (!parsed.notesList || parsed.notesList.length === 0) {
+                    parsed.notesList = freshData.notesList;
+                } else {
+                    // 確保讀取時永遠由新到舊排序
+                    parsed.notesList.sort((a, b) => new Date(b.id) - new Date(a.id));
+                }
+                if (!parsed.activeNoteId) parsed.activeNoteId = parsed.notesList[0].id;
                 if (!parsed.students || Object.keys(parsed.students).length < 25) {
                     parsed.students = freshData.students;
                 }
@@ -259,7 +268,7 @@
                 reminder: "帶外套。"
             }];
 
-            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId, teacherAuth: { user: "nini309", pass: "20010909" } };
+            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId };
         }
 
         let currentStudentId = null;
@@ -301,9 +310,9 @@
         }
 
         function renderDashboard(student, systemData) {
-            const activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
-            const activeIndex = systemData.notesList.findIndex(n => n.id === (activeNote ? activeNote.id : ''));
-            const yesterdayNote = (activeIndex !== -1 && systemData.notesList.length > activeIndex + 1) ? systemData.notesList[activeIndex + 1] : (systemData.notesList.length > 1 ? systemData.notesList[1] : null);
+            // 永遠取排序後的第一篇（最新）作為當天聯絡簿，第二篇作為昨天聯絡簿
+            const activeNote = systemData.notesList[0] || null;
+            const yesterdayNote = systemData.notesList[1] || null;
 
             // 當天聯絡簿與老師提醒
             if (activeNote) {
@@ -350,7 +359,7 @@
                     yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無登記作業</p>`;
                 } else {
                     yestHwLines.forEach((line, idx) => {
-                        const statusKey = yestStudentStatus[idx] || "1"; // 預設已繳交
+                        const statusKey = yestStudentStatus[idx] || "1";
                         const s = statusMap[statusKey] || statusMap["1"];
                         yesterdayHwContainer.innerHTML += `
                             <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50/40 border border-amber-100 text-xs">
@@ -364,7 +373,7 @@
                 yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無作業狀態追蹤</p>`;
             }
 
-            // 需家長協助完成之作業 (第四區塊專屬欄位顯示)
+            // 需家長協助完成之作業
             const parentAssistContainer = document.getElementById('parent-assist-homework-list');
             parentAssistContainer.innerHTML = '';
             
@@ -379,7 +388,7 @@
                 parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2">目前無特別需家長協助之項目 ✨</p>`;
             }
 
-            // 第二頁：傷病通知紀錄
+            // 傷病通知紀錄
             const pendingContainer = document.getElementById('pending-injury-list');
             const confirmedContainer = document.getElementById('confirmed-injury-list');
             pendingContainer.innerHTML = '';
