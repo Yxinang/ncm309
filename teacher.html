@@ -3,64 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>班級 - 教師管理後台</title>
+    <title>海洋生物樂園 - 教師管理後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fffaf5; font-family: system-ui, -apple-system, sans-serif; color: #5a4d41; }
+        /* 海洋蠟筆手繪風與大字型設定 */
+        body { 
+            background-color: #33FFCC; 
+            font-family: system-ui, -apple-system, sans-serif; 
+            color: #1a4d43; 
+        }
+        .crayon-card {
+            background-color: #ffffff;
+            border: 3px dashed #1a8c73;
+            border-radius: 28px;
+            box-shadow: 0 6px 0 rgba(26, 140, 115, 0.2);
+        }
+        .crayon-header {
+            background-color: #e0fcf5;
+            border-bottom: 2px dashed #1a8c73;
+            border-top-left-radius: 25px;
+            border-top-right-radius: 25px;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <!-- 老師登入視窗 -->
-    <div id="teacher-login-modal" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6 space-y-6 border border-amber-100">
-            <div class="text-center space-y-2">
-                <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mx-auto text-xl shadow-inner">
-                    <i class="fa-solid fa-shield-cat"></i>
+    <div id="teacher-login-modal" class="fixed inset-0 bg-teal-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="crayon-card w-full max-w-sm p-6 space-y-6">
+            <div class="text-center space-y-3">
+                <div class="w-16 h-16 bg-teal-100 text-teal-600 rounded-3xl flex items-center justify-center mx-auto text-2xl shadow-inner border-2 border-teal-300">
+                    <i class="fa-solid fa-shield-cat"></i> 🐙
                 </div>
-                <h2 class="text-lg font-bold text-amber-900">教師溫馨後台</h2>
-                <p class="text-xs text-amber-700/70">請輸入教師專屬帳號與密碼 </p>
+                <h2 class="text-xl font-bold text-teal-900">教師溫馨後台 🌊</h2>
+                <p class="text-xs text-teal-700 font-medium">請輸入教師專屬帳號與密碼 (t309 / 0909)</p>
             </div>
 
-            <div class="space-y-4 text-xs">
+            <div class="space-y-4 text-sm">
                 <div>
-                    <label class="block font-bold text-amber-900/80 mb-1">教師帳號</label>
-                    <input type="text" id="teacher-user" class="w-full px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50/30 outline-none focus:ring-2 focus:ring-amber-400" placeholder="請輸入帳號">
+                    <label class="block font-bold text-teal-900 mb-1">教師帳號 🐢</label>
+                    <input type="text" id="teacher-user" class="w-full px-4 py-3 rounded-2xl border-2 border-teal-300 bg-teal-50/50 outline-none focus:ring-2 focus:ring-teal-500 font-medium" placeholder="請輸入帳號">
                 </div>
                 <div>
-                    <label class="block font-bold text-amber-900/80 mb-1">登入密碼</label>
-                    <input type="password" id="teacher-pass" class="w-full px-4 py-3 rounded-2xl border border-amber-200 bg-amber-50/30 outline-none focus:ring-2 focus:ring-amber-400" placeholder="請輸入密碼">
+                    <label class="block font-bold text-teal-900 mb-1">登入密碼 🦀</label>
+                    <input type="password" id="teacher-pass" class="w-full px-4 py-3 rounded-2xl border-2 border-teal-300 bg-teal-50/50 outline-none focus:ring-2 focus:ring-teal-500 font-medium" placeholder="請輸入密碼">
                 </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember-me" class="w-4 h-4 text-amber-600 rounded border-amber-300">
-                    <label for="remember-me" class="ml-2 text-amber-900 font-medium">記住我 (帳號與密碼)</label>
+                <div class="flex items-center pt-1">
+                    <input type="checkbox" id="remember-me" class="w-5 h-5 text-teal-600 rounded border-teal-300">
+                    <label for="remember-me" class="ml-2 text-teal-900 font-bold text-xs">記住我 (帳號與密碼)</label>
                 </div>
-                <button onclick="directLogin()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-2xl shadow-md transition">
+                <button onclick="directLogin()" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-2xl shadow-md transition text-base">
                     立即登入後台 💛
                 </button>
             </div>
-            <div class="text-center">
-                <a href="index.html" class="text-xs text-amber-700 hover:underline font-bold">返回家長端首頁</a>
+            <div class="text-center pt-2">
+                <a href="index.html" class="text-xs text-teal-800 hover:underline font-bold">返回家長端首頁 🐬</a>
             </div>
         </div>
     </div>
 
     <!-- 教師後台主介面 -->
     <div id="teacher-dashboard" class="hidden flex flex-col min-h-screen">
-        <header class="bg-amber-400 text-amber-950 shadow-sm sticky top-0 z-40">
+        <header class="bg-teal-500 text-white shadow-md sticky top-0 z-40 border-b-4 border-teal-700">
             <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-white/60 p-2 rounded-2xl text-amber-800 shadow-sm">
-                        <i class="fa-solid fa-chalkboard-user text-base"></i>
+                    <div class="bg-white/80 p-2 rounded-2xl text-teal-800 shadow-sm text-xl">
+                        <i class="fa-solid fa-fish-fins"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-sm" id="teacher-header-title">班級 • 教師溫馨後台</h1>
-                        <p class="text-xs text-amber-950/70">作業與傷病狀態追蹤系統</p>
+                        <h1 class="font-bold text-base" id="teacher-header-title">海洋生物樂園 • 教師溫馨後台 🌊</h1>
+                        <p class="text-xs text-teal-100 font-medium">作業與傷病狀態追蹤系統</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="logoutTeacher()" class="text-xs bg-amber-200/80 hover:bg-amber-300 text-amber-900 px-3 py-1.5 rounded-xl font-bold transition">
+                    <button onclick="logoutTeacher()" class="text-xs bg-teal-100 hover:bg-teal-200 text-teal-900 px-3.5 py-2 rounded-xl font-bold transition shadow-sm">
                         登出後台
                     </button>
                 </div>
@@ -68,156 +85,156 @@
         </header>
 
         <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
-            <div class="flex bg-amber-100/60 p-1.5 rounded-2xl max-w-2xl mx-auto overflow-x-auto border border-amber-200/60">
-                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3">作業與訂正</button>
-                <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3">聯絡簿管理</button>
-                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3">傷病通知</button>
-                <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3"><i class="fa-solid fa-gear mr-1"></i>班級設定</button>
+            <div class="flex bg-teal-100/80 p-1.5 rounded-2xl max-w-2xl mx-auto overflow-x-auto border-2 border-teal-400">
+                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-teal-900 shadow-sm transition whitespace-nowrap px-4">🐠 作業與訂正</button>
+                <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4">🐢 聯絡簿管理</button>
+                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4">🩹 傷病通知</button>
+                <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4"><i class="fa-solid fa-gear mr-1"></i>🦀 班級設定</button>
             </div>
 
             <!-- 1. 作業與訂正管理 -->
-            <div id="section-homework" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-4">
-                <div class="flex justify-between items-center border-b border-amber-100 pb-3">
-                    <h2 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-list-check text-amber-500 mr-2"></i>全班作業狀態管理</h2>
-                    <span id="hw-current-date-tag" class="text-xs bg-amber-100 text-amber-900 px-3 py-1 rounded-full font-bold">載入中...</span>
+            <div id="section-homework" class="crayon-card p-5 space-y-4">
+                <div class="crayon-header px-4 py-2.5 flex justify-between items-center -mx-5 -mt-5 mb-3">
+                    <h2 class="font-bold text-teal-900 text-sm"><i class="fa-solid fa-list-check text-teal-600 mr-2"></i>全班作業狀態管理 🐬</h2>
+                    <span id="hw-current-date-tag" class="text-xs bg-teal-200 text-teal-900 px-3.5 py-1 rounded-full font-bold shadow-sm">載入中...</span>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
+                    <table class="w-full text-left border-collapse text-sm">
                         <thead>
-                            <tr class="bg-amber-50/50 text-amber-900 border-b border-amber-100" id="teacher-homework-thead">
+                            <tr class="bg-teal-50 text-teal-900 border-b-2 border-teal-200 font-bold" id="teacher-homework-thead">
                                 <th class="p-3">座號 / 姓名</th>
                             </tr>
                         </thead>
-                        <tbody id="teacher-homework-tbody" class="divide-y divide-amber-50"></tbody>
+                        <tbody id="teacher-homework-tbody" class="divide-y divide-teal-100"></tbody>
                     </table>
                 </div>
             </div>
 
             <!-- 2. 聯絡簿內容與管理 -->
-            <div id="section-note" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-6 max-w-xl mx-auto hidden">
-                <div class="space-y-4 bg-amber-50/40 p-4 rounded-2xl border border-amber-200/80">
-                    <div class="flex justify-between items-center border-b border-amber-200/60 pb-2">
-                        <h2 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-book text-amber-500 mr-2"></i>編輯聯絡簿與自訂時間</h2>
-                        <button onclick="prepareNewNote()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl text-[11px] font-bold shadow-sm transition">
+            <div id="section-note" class="crayon-card p-5 space-y-6 max-w-xl mx-auto hidden">
+                <div class="space-y-4 bg-teal-50/50 p-5 rounded-2xl border-2 border-teal-300">
+                    <div class="flex justify-between items-center border-b-2 border-dashed border-teal-200 pb-2">
+                        <h2 class="font-bold text-teal-900 text-sm"><i class="fa-solid fa-book text-teal-600 mr-2"></i>編輯聯絡簿與自訂時間 🐳</h2>
+                        <button onclick="prepareNewNote()" class="bg-teal-500 hover:bg-teal-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition">
                             <i class="fa-solid fa-plus mr-1"></i> 發布新的一天
                         </button>
                     </div>
                     
-                    <div class="space-y-3 text-xs">
+                    <div class="space-y-3 text-sm">
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">📅 自訂聯絡簿時間（系統將依台北時間自動對應正確星期）</label>
-                            <input type="text" id="note-date" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white" placeholder="例如：民國 115 年 11 月 5 日 (星期四)">
+                            <label class="block font-bold text-teal-900 mb-1">📅 自訂聯絡簿時間（系統將依台北時間自動對應正確星期）</label>
+                            <input type="text" id="note-date" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium" placeholder="例如：民國 115 年 11 月 5 日 (星期四)">
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">當天聯絡簿抄寫內容（每行一項作業）</label>
-                            <textarea id="note-content" rows="4" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white"></textarea>
+                            <label class="block font-bold text-teal-900 mb-1">當天聯絡簿抄寫內容（每行一項作業）</label>
+                            <textarea id="note-content" rows="4" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1" id="teacher-msg-label">📢 老師提醒 / 給家長的話</label>
-                            <textarea id="note-parent-message" rows="3" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white"></textarea>
+                            <label class="block font-bold text-teal-900 mb-1" id="teacher-msg-label">📢 老師提醒 / 給家長的話</label>
+                            <textarea id="note-parent-message" rows="3" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">🤝 需家長協助完成之作業 / 親子共學（第四區塊顯示內容）</label>
-                            <textarea id="note-parent-assist" rows="2" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white" placeholder="例如：請家長協助指導數學單元複習並簽名"></textarea>
+                            <label class="block font-bold text-teal-900 mb-1">🤝 需家長協助完成之作業 / 親子共學（第四區塊顯示內容）</label>
+                            <textarea id="note-parent-assist" rows="2" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium" placeholder="例如：請家長協助指導數學單元複習並簽名"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">叮嚀備註</label>
-                            <input type="text" id="note-reminder" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                            <label class="block font-bold text-teal-900 mb-1">叮嚀備註</label>
+                            <input type="text" id="note-reminder" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                         </div>
-                        <button onclick="saveContactNote()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-2xl shadow-md transition">儲存並更新此篇聯絡簿 💛</button>
+                        <button onclick="saveContactNote()" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-2xl shadow-md transition text-base">儲存並更新此篇聯絡簿 💛</button>
                     </div>
                 </div>
 
-                <div class="space-y-3 border-t border-amber-100 pt-4">
-                    <h3 class="font-bold text-amber-900 text-sm"><i class="fa-solid fa-box-archive text-amber-500 mr-2"></i>歷史聯絡簿紀錄總覽（永久保留，隨時翻閱或刪除）</h3>
+                <div class="space-y-3 border-t-2 border-dashed border-teal-200 pt-4">
+                    <h3 class="font-bold text-teal-900 text-sm"><i class="fa-solid fa-box-archive text-teal-600 mr-2"></i>歷史聯絡簿紀錄總覽（永久保留，隨時翻閱或刪除）</h3>
                     <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="teacher-history-notes-list"></div>
                 </div>
             </div>
 
             <!-- 3. 傷病通知發送與狀態查詢 -->
-            <div id="section-injury" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-6 max-w-2xl mx-auto hidden">
+            <div id="section-injury" class="crayon-card p-5 space-y-6 max-w-2xl mx-auto hidden">
                 <div>
-                    <h2 class="font-bold text-amber-900 text-sm border-b border-amber-100 pb-3"><i class="fa-solid fa-user-nurse text-rose-500 mr-2"></i>發送傷病通知單</h2>
-                    <form onsubmit="submitInjuryNotice(event)" class="space-y-3 text-xs mt-3">
+                    <h2 class="font-bold text-teal-900 text-sm border-b-2 border-dashed border-teal-200 pb-3"><i class="fa-solid fa-user-nurse text-rose-500 mr-2"></i>發送傷病通知單 🐙</h2>
+                    <form onsubmit="submitInjuryNotice(event)" class="space-y-3 text-sm mt-3">
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">選擇學生</label>
-                            <select id="inj-student-id" required class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-amber-50/30"></select>
+                            <label class="block font-bold text-teal-900 mb-1">選擇學生</label>
+                            <select id="inj-student-id" required class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-teal-50/50 font-medium"></select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block font-bold text-amber-900/80 mb-1">發生時間</label>
-                                <input type="text" id="inj-time" required value="上午 10:15" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                                <label class="block font-bold text-teal-900 mb-1">發生時間</label>
+                                <input type="text" id="inj-time" required value="上午 10:15" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                             </div>
                             <div>
-                                <label class="block font-bold text-amber-900/80 mb-1">發生地點</label>
-                                <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                                <label class="block font-bold text-teal-900 mb-1">發生地點</label>
+                                <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                             </div>
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">受傷症狀</label>
-                            <input type="text" id="inj-symptom" required value="右膝擦傷" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                            <label class="block font-bold text-teal-900 mb-1">受傷症狀</label>
+                            <input type="text" id="inj-symptom" required value="右膝擦傷" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                         </div>
                         <div>
-                            <label class="block font-bold text-amber-900/80 mb-1">處理經過</label>
-                            <textarea id="inj-treatment" rows="2" required class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">生理食鹽水清洗，擦優碘貼人工皮。</textarea>
+                            <label class="block font-bold text-teal-900 mb-1">處理經過</label>
+                            <textarea id="inj-treatment" rows="2" required class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">生理食鹽水清洗，擦優碘貼人工皮。</textarea>
                         </div>
-                        <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-2xl shadow-md transition">發送傷病通知單 🩹</button>
+                        <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-2xl shadow-md transition text-base">發送傷病通知單 🩹</button>
                     </form>
                 </div>
 
-                <div class="border-t border-amber-100 pt-4">
-                    <h3 class="font-bold text-amber-900 text-sm mb-3"><i class="fa-solid fa-clipboard-list text-rose-500 mr-2"></i>已發送之傷病通知（每位學生獨立分開永久記錄）</h3>
+                <div class="border-t-2 border-dashed border-teal-200 pt-4">
+                    <h3 class="font-bold text-teal-900 text-sm mb-3"><i class="fa-solid fa-clipboard-list text-rose-500 mr-2"></i>已發送之傷病通知（每位學生獨立分開永久記錄）</h3>
                     <div class="space-y-3" id="teacher-injury-status-list"></div>
                 </div>
             </div>
 
             <!-- 4. 班級與學生設定 -->
-            <div id="section-settings" class="bg-white rounded-3xl p-5 shadow-sm border border-amber-100 space-y-6 max-w-3xl mx-auto hidden">
-                <h2 class="font-bold text-amber-900 text-sm border-b border-amber-100 pb-3"><i class="fa-solid fa-gear text-amber-500 mr-2"></i>班級與學生名單自訂管理</h2>
+            <div id="section-settings" class="crayon-card p-5 space-y-6 max-w-3xl mx-auto hidden">
+                <h2 class="font-bold text-teal-900 text-sm border-b-2 border-dashed border-teal-200 pb-3"><i class="fa-solid fa-gear text-teal-600 mr-2"></i>班級與學生名單自訂管理 🦀</h2>
                 
-                <div class="grid grid-cols-3 gap-3 text-xs bg-amber-50/40 p-4 rounded-2xl border border-amber-200/80">
+                <div class="grid grid-cols-3 gap-3 text-sm bg-teal-50/50 p-4 rounded-2xl border-2 border-teal-300">
                     <div>
-                        <label class="block font-bold text-amber-900/80 mb-1">學校名稱</label>
-                        <input type="text" id="setting-school" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                        <label class="block font-bold text-teal-900 mb-1">學校名稱</label>
+                        <input type="text" id="setting-school" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                     </div>
                     <div>
-                        <label class="block font-bold text-amber-900/80 mb-1">班級名稱</label>
-                        <input type="text" id="setting-classname" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                        <label class="block font-bold text-teal-900 mb-1">班級名稱</label>
+                        <input type="text" id="setting-classname" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                     </div>
                     <div>
-                        <label class="block font-bold text-amber-900/80 mb-1">老師姓名</label>
-                        <input type="text" id="setting-teacher" class="w-full px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
+                        <label class="block font-bold text-teal-900 mb-1">老師姓名</label>
+                        <input type="text" id="setting-teacher" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
                     </div>
                 </div>
 
-                <div class="bg-amber-100/40 p-4 rounded-2xl border border-amber-200/60 space-y-3 text-xs">
-                    <h3 class="font-bold text-amber-900"><i class="fa-solid fa-user-plus mr-1"></i> 新增或修改學生資料</h3>
+                <div class="bg-teal-100/60 p-4 rounded-2xl border-2 border-teal-300 space-y-3 text-sm">
+                    <h3 class="font-bold text-teal-900"><i class="fa-solid fa-user-plus mr-1"></i> 新增或修改學生資料</h3>
                     <div class="grid grid-cols-4 gap-2">
-                        <input type="text" id="new-seat" placeholder="座號 (例如: 01)" class="px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
-                        <input type="text" id="new-name" placeholder="學生姓名" class="px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
-                        <input type="text" id="new-id" placeholder="學生學號 (例如: 113056)" class="px-3 py-2.5 rounded-xl border border-amber-200 bg-white">
-                        <button onclick="addNewStudent()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl shadow-sm transition">新增/更新學生</button>
+                        <input type="text" id="new-seat" placeholder="座號 (01)" class="px-3 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
+                        <input type="text" id="new-name" placeholder="學生姓名" class="px-3 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
+                        <input type="text" id="new-id" placeholder="學生學號" class="px-3 py-3 rounded-xl border-2 border-teal-300 bg-white font-medium">
+                        <button onclick="addNewStudent()" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 rounded-xl shadow-sm transition">新增/更新</button>
                     </div>
                 </div>
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-amber-900 text-xs"><i class="fa-solid fa-users mr-1"></i> 現有學生清單 (依座號排列)</h3>
-                        <button onclick="saveClassSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm transition">
+                        <h3 class="font-bold text-teal-900 text-sm"><i class="fa-solid fa-users mr-1"></i> 現有學生清單 (依座號排列)</h3>
+                        <button onclick="saveClassSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow-sm transition">
                             <i class="fa-solid fa-floppy-disk mr-1"></i> 儲存所有變更
                         </button>
                     </div>
-                    <div class="overflow-x-auto max-h-80 border border-amber-100 rounded-2xl">
-                        <table class="w-full text-left border-collapse text-xs">
+                    <div class="overflow-x-auto max-h-80 border-2 border-teal-200 rounded-2xl">
+                        <table class="w-full text-left border-collapse text-sm">
                             <thead>
-                                <tr class="bg-amber-50/60 text-amber-900 border-b border-amber-100 sticky top-0">
+                                <tr class="bg-teal-50 text-teal-900 border-b-2 border-teal-200 sticky top-0 font-bold">
                                     <th class="p-3">座號</th>
                                     <th class="p-3">姓名</th>
                                     <th class="p-3">學號</th>
                                     <th class="p-3 text-center">操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="settings-student-tbody" class="divide-y divide-amber-50"></tbody>
+                            <tbody id="settings-student-tbody" class="divide-y divide-teal-100"></tbody>
                         </table>
                     </div>
                 </div>
@@ -226,34 +243,34 @@
     </div>
 
     <!-- 修改傷病通知彈跳視窗 -->
-    <div id="injury-edit-modal" class="fixed inset-0 bg-amber-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-xl p-6 space-y-4 text-xs border border-amber-100">
-            <div class="flex justify-between items-center border-b border-amber-100 pb-2">
-                <h3 class="font-bold text-sm text-amber-900"><i class="fa-solid fa-pen-to-square text-rose-500 mr-1"></i> 修改傷病通知單</h3>
-                <button onclick="closeInjuryEditModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+    <div id="injury-edit-modal" class="fixed inset-0 bg-teal-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="crayon-card w-full max-w-md p-6 space-y-4 text-sm">
+            <div class="flex justify-between items-center border-b-2 border-dashed border-teal-200 pb-2">
+                <h3 class="font-bold text-base text-teal-900"><i class="fa-solid fa-pen-to-square text-rose-500 mr-1"></i> 修改傷病通知單</h3>
+                <button onclick="closeInjuryEditModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <input type="hidden" id="edit-inj-student-id">
             <input type="hidden" id="edit-inj-index">
             <div class="space-y-3">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block font-bold text-amber-900/80 mb-1">發生時間</label>
-                        <input type="text" id="edit-inj-time" class="w-full px-3 py-2.5 rounded-xl border border-amber-200">
+                        <label class="block font-bold text-teal-900 mb-1">發生時間</label>
+                        <input type="text" id="edit-inj-time" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 font-medium">
                     </div>
                     <div>
-                        <label class="block font-bold text-amber-900/80 mb-1">發生地點</label>
-                        <input type="text" id="edit-inj-location" class="w-full px-3 py-2.5 rounded-xl border border-amber-200">
+                        <label class="block font-bold text-teal-900 mb-1">發生地點</label>
+                        <input type="text" id="edit-inj-location" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 font-medium">
                     </div>
                 </div>
                 <div>
-                    <label class="block font-bold text-amber-900/80 mb-1">受傷症狀</label>
-                    <input type="text" id="edit-inj-symptom" class="w-full px-3 py-2.5 rounded-xl border border-amber-200">
+                    <label class="block font-bold text-teal-900 mb-1">受傷症狀</label>
+                    <input type="text" id="edit-inj-symptom" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 font-medium">
                 </div>
                 <div>
-                    <label class="block font-bold text-amber-900/80 mb-1">處理經過</label>
-                    <textarea id="edit-inj-treatment" rows="3" class="w-full px-3 py-2.5 rounded-xl border border-amber-200"></textarea>
+                    <label class="block font-bold text-teal-900 mb-1">處理經過</label>
+                    <textarea id="edit-inj-treatment" rows="3" class="w-full px-3.5 py-3 rounded-xl border-2 border-teal-300 font-medium"></textarea>
                 </div>
-                <button onclick="saveInjuryEdit()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-2xl shadow-sm transition">確認修改儲存</button>
+                <button onclick="saveInjuryEdit()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-2xl shadow-sm transition text-base">確認修改儲存</button>
             </div>
         </div>
     </div>
@@ -303,7 +320,6 @@
         }
 
         async function saveSystemData(data) {
-            // 儲存前強制排序由新到舊
             if (data.notesList && Array.isArray(data.notesList)) {
                 data.notesList.sort((a, b) => new Date(b.id) - new Date(a.id));
             }
@@ -436,7 +452,7 @@
             const systemData = getSystemData();
             const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
             
-            document.getElementById('teacher-header-title').innerText = `${cInfo.className} • 教師溫馨後台`;
+            document.getElementById('teacher-header-title').innerText = `${cInfo.className} • 教師溫馨後台 🌊`;
             document.getElementById('teacher-msg-label').innerText = `📢 ${cInfo.teacherName}老師提醒 / 給家長的話`;
 
             document.getElementById('setting-school').value = cInfo.schoolName;
@@ -475,7 +491,7 @@
                 const student = systemData.students[id];
                 selectStudent.innerHTML += `<option value="${id}">${student.seat} 號 - ${student.name} (學號: ${id})</option>`;
 
-                let rowHtml = `<tr class="hover:bg-amber-50/40"><td class="p-3 font-bold text-amber-900">${student.seat} 號 - ${student.name} <span class="text-xs text-amber-800/50">(${id})</span></td>`;
+                let rowHtml = `<tr class="hover:bg-teal-50/60"><td class="p-3 font-bold text-teal-950">${student.seat} 號 - ${student.name} <span class="text-xs text-teal-800/60 font-medium">(${id})</span></td>`;
 
                 if (hwLines.length === 0) {
                     rowHtml += `<td class="p-3 text-slate-400">-</td>`;
@@ -487,7 +503,7 @@
                         const currentStatus = student.homeworkStatus[activeNote.id][index] || "1";
                         rowHtml += `
                             <td class="p-3">
-                                <select onchange="updateHomework('${id}', '${activeNote.id}', ${index}, this.value)" class="px-2.5 py-1.5 rounded-xl border border-amber-200 bg-white text-xs font-medium focus:ring-1 focus:ring-amber-400">
+                                <select onchange="updateHomework('${id}', '${activeNote.id}', ${index}, this.value)" class="px-3 py-2 rounded-xl border-2 border-teal-300 bg-white text-sm font-bold text-teal-950 focus:ring-2 focus:ring-teal-500">
                                     <option value="1" ${currentStatus === '1' ? 'selected' : ''}>1. 繳交</option>
                                     <option value="2" ${currentStatus === '2' ? 'selected' : ''}>2. 已補交</option>
                                     <option value="3" ${currentStatus === '3' ? 'selected' : ''}>3. 未完成</option>
@@ -502,8 +518,8 @@
 
                 rowHtml += `
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '1')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">全部繳交</button>
-                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '3')" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-sm transition">全部未繳交</button>
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '1')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">全部繳交</button>
+                        <button onclick="setAllStatusForStudent('${id}', '${activeNote.id}', ${hwLines.length}, '3')" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">全部未繳交</button>
                     </td>
                 `;
 
@@ -511,12 +527,12 @@
                 tbody.innerHTML += rowHtml;
 
                 rosterTbody.innerHTML += `
-                    <tr class="hover:bg-amber-50/40">
-                        <td class="p-3 font-bold text-amber-900">${student.seat} 號</td>
-                        <td class="p-3 font-medium text-slate-800">${student.name}</td>
-                        <td class="p-3 text-amber-700 font-mono font-bold">${id}</td>
+                    <tr class="hover:bg-teal-50/60">
+                        <td class="p-3 font-bold text-teal-950">${student.seat} 號</td>
+                        <td class="p-3 font-medium text-slate-900">${student.name}</td>
+                        <td class="p-3 text-teal-800 font-mono font-bold">${id}</td>
                         <td class="p-3 text-center">
-                            <button onclick="deleteStudent('${id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1 rounded-xl text-xs font-bold transition">刪除</button>
+                            <button onclick="deleteStudent('${id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">刪除</button>
                         </td>
                     </tr>
                 `;
@@ -535,22 +551,22 @@
                         hasInjury = true;
                         const isConfirmed = inj.confirmed === true;
                         injuryStatusList.innerHTML += `
-                            <div class="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 text-xs space-y-2 shadow-sm">
+                            <div class="p-4 rounded-2xl bg-teal-50/70 border-2 border-teal-200 text-sm space-y-2 shadow-sm">
                                 <div class="flex justify-between items-center font-bold">
-                                    <span class="text-amber-900">${student.seat} 號 - ${student.name}（${inj.date} ${inj.time}）</span>
-                                    <span class="px-2.5 py-1 rounded-full font-medium ${isConfirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                    <span class="text-teal-950">${student.seat} 號 - ${student.name}（${inj.date} ${inj.time}）</span>
+                                    <span class="px-3 py-1 rounded-full font-bold text-xs ${isConfirmed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'}">
                                         <i class="fa-solid ${isConfirmed ? 'fa-circle-check' : 'fa-clock'} mr-1"></i>
                                         ${isConfirmed ? '家長已確認收到 (' + inj.confirmTime + ')' : '尚未確認'}
                                     </span>
                                 </div>
-                                <p class="text-slate-700">地點：${inj.location} | 狀況：${inj.symptom}</p>
-                                <p class="text-slate-600 bg-white p-2.5 rounded-xl border border-amber-100">處置：${inj.treatment}</p>
-                                <div class="flex justify-end gap-2 pt-1 border-t border-amber-200/60">
-                                    <button onclick="openInjuryEdit('${id}', ${injIndex})" class="bg-amber-200/80 hover:bg-amber-300 text-amber-900 px-3 py-1 rounded-xl font-bold transition"><i class="fa-solid fa-pen mr-1"></i> 修改</button>
+                                <p class="text-slate-800 font-medium">地點：${inj.location} | 狀況：${inj.symptom}</p>
+                                <p class="text-slate-800 bg-white p-3 rounded-xl border-2 border-teal-200 font-medium">處置：${inj.treatment}</p>
+                                <div class="flex justify-end gap-2 pt-1 border-t-2 border-teal-200">
+                                    <button onclick="openInjuryEdit('${id}', ${injIndex})" class="bg-teal-200 hover:bg-teal-300 text-teal-950 px-3 py-1.5 rounded-xl font-bold transition text-xs"><i class="fa-solid fa-pen mr-1"></i> 修改</button>
                                     ${!isConfirmed ? `
-                                        <button onclick="deleteInjury('${id}', ${injIndex})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1 rounded-xl font-bold transition"><i class="fa-solid fa-trash mr-1"></i> 刪除</button>
+                                        <button onclick="deleteInjury('${id}', ${injIndex})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl font-bold transition text-xs"><i class="fa-solid fa-trash mr-1"></i> 刪除</button>
                                     ` : `
-                                        <span class="text-slate-400 italic text-[11px] self-center">（家長已確認，無法刪除）</span>
+                                        <span class="text-slate-500 italic text-xs self-center font-medium">（家長已確認，無法刪除）</span>
                                     `}
                                 </div>
                             </div>
@@ -560,7 +576,7 @@
             });
 
             if (!hasInjury) {
-                injuryStatusList.innerHTML = `<p class="text-center text-xs text-amber-800/60 py-3">目前沒有發送任何傷病通知單</p>`;
+                injuryStatusList.innerHTML = `<p class="text-center text-xs text-teal-800 font-bold py-3">目前沒有發送任何傷病通知單</p>`;
             }
         }
 
@@ -635,16 +651,16 @@
             systemData.notesList.forEach((note) => {
                 const isActive = note.id === systemData.activeNoteId;
                 listContainer.innerHTML += `
-                    <div class="p-3.5 rounded-2xl ${isActive ? 'bg-amber-100/60 border-amber-300' : 'bg-amber-50/30 border-amber-200/60'} border text-xs space-y-2">
-                        <div class="flex justify-between items-center font-bold ${isActive ? 'text-amber-900' : 'text-slate-700'}">
+                    <div class="p-4 rounded-2xl ${isActive ? 'bg-teal-100/80 border-teal-400' : 'bg-teal-50/50 border-teal-200'} border-2 text-sm space-y-2">
+                        <div class="flex justify-between items-center font-bold ${isActive ? 'text-teal-950' : 'text-slate-800'}">
                             <span>${isActive ? '📌 【當前顯示中】' : '📜'} 聯絡簿 (${note.date})</span>
-                            <div class="flex gap-1">
-                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">設為當前</button>` : ''}
-                                <button onclick="editNote('${note.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">編輯</button>
-                                <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2.5 py-1 rounded-xl text-[11px] shadow-sm transition">刪除</button>
+                            <div class="flex gap-1.5">
+                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">設為當前</button>` : ''}
+                                <button onclick="editNote('${note.id}')" class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">編輯</button>
+                                <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">刪除</button>
                             </div>
                         </div>
-                        <p class="text-slate-600 whitespace-pre-line">${note.content}</p>
+                        <p class="text-slate-800 whitespace-pre-line font-medium">${note.content}</p>
                     </div>
                 `;
             });
@@ -818,10 +834,10 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
-            document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
-            document.getElementById('tab-inj').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
-            document.getElementById('tab-set').className = tab === 'settings' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-amber-900 shadow-sm transition whitespace-nowrap px-3" : "flex-1 py-2 text-xs font-bold rounded-xl text-amber-800/70 transition whitespace-nowrap px-3";
+            document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-teal-900 shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4";
+            document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-teal-900 shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4";
+            document.getElementById('tab-inj').className = tab === 'injury' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-teal-900 shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4";
+            document.getElementById('tab-set').className = tab === 'settings' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-teal-900 shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-teal-800/80 transition whitespace-nowrap px-4";
 
             document.getElementById('section-homework').classList.toggle('hidden', tab !== 'homework');
             document.getElementById('section-note').classList.toggle('hidden', tab !== 'note');
