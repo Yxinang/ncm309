@@ -125,17 +125,15 @@
                     <h2 class="font-bold text-orange-900 text-sm flex items-center gap-2 border-b border-orange-200 pb-2">
                         <i class="fa-solid fa-hands-holding-child text-orange-500"></i> 需家長協助完成之作業 / 親子共學
                     </h2>
-                    <div class="bg-white/90 p-4 rounded-2xl border border-orange-100 text-xs" id="parent-assist-homework-list">
+                    <div class="bg-white/90 p-4 rounded-2xl border border-orange-100 text-xs space-y-2" id="parent-assist-homework-list">
                         <p class="text-slate-500 text-center py-1">目前無特別需家長協助之項目 ✨</p>
                     </div>
                 </section>
 
             </div>
 
-            <!-- 第二頁：傷病通知紀錄（雙區塊：未確認 vs 已確認） -->
+            <!-- 第二頁：傷病通知紀錄 -->
             <div id="view-injury" class="space-y-6 hidden">
-                
-                <!-- 老師上傳，家長未確認 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-amber-200 space-y-4">
                     <h2 class="font-bold text-amber-900 text-sm flex items-center gap-2 border-b border-amber-100 pb-2">
                         <i class="fa-solid fa-clock text-amber-500"></i> 老師上傳，等待家長確認（<span id="pending-injury-count">0</span> 筆）
@@ -143,14 +141,12 @@
                     <div class="space-y-3" id="pending-injury-list"></div>
                 </section>
 
-                <!-- 家長已確認區塊 -->
                 <section class="bg-white rounded-3xl p-5 shadow-sm border border-emerald-200 space-y-4">
                     <h2 class="font-bold text-emerald-900 text-sm flex items-center gap-2 border-b border-emerald-100 pb-2">
                         <i class="fa-solid fa-circle-check text-emerald-500"></i> 家長已確認收到紀錄（<span id="confirmed-injury-count">0</span> 筆）
                     </h2>
                     <div class="space-y-3" id="confirmed-injury-list"></div>
                 </section>
-
             </div>
         </div>
     </main>
@@ -178,7 +174,6 @@
                 autoLoginParent(rememberedId, systemData);
             }
 
-            // 開啟自動背景同步：每隔 10 秒自動向雲端檢查最新資料並更新畫面
             setInterval(async () => {
                 await syncLoadData();
                 if (currentStudentId) {
@@ -260,6 +255,7 @@
                 date: getTaiwanTaipeiDateString(),
                 content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
                 parentMessage: "本週三有戶外教學。",
+                parentAssist: "請家長協助指導數學單元複習並簽名",
                 reminder: "帶外套。"
             }];
 
@@ -338,7 +334,9 @@
                 "1": { text: "繳交", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
                 "2": { text: "已補交", color: "bg-blue-50 text-blue-700 border-blue-200" },
                 "3": { text: "未完成", color: "bg-amber-50 text-amber-700 border-amber-200" },
-                "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-700 border-rose-200" }
+                "4": { text: "需訂正、補交", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                "5": { text: "未帶回家", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                "6": { text: "未帶到學校", color: "bg-orange-50 text-orange-700 border-orange-200" }
             };
 
             // 昨天作業今天繳交狀態
@@ -352,8 +350,8 @@
                     yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無登記作業</p>`;
                 } else {
                     yestHwLines.forEach((line, idx) => {
-                        const statusKey = yestStudentStatus[idx] || "3";
-                        const s = statusMap[statusKey];
+                        const statusKey = yestStudentStatus[idx] || "1"; // 預設已繳交
+                        const s = statusMap[statusKey] || statusMap["1"];
                         yesterdayHwContainer.innerHTML += `
                             <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50/40 border border-amber-100 text-xs">
                                 <span class="font-medium text-slate-700">${line}</span>
@@ -366,36 +364,22 @@
                 yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無作業狀態追蹤</p>`;
             }
 
-            // 需家長協助完成之作業
+            // 需家長協助完成之作業 (第四區塊專屬欄位顯示)
             const parentAssistContainer = document.getElementById('parent-assist-homework-list');
             parentAssistContainer.innerHTML = '';
-            let assistItems = [];
             
-            systemData.notesList.forEach(note => {
-                if (note.content) {
-                    const lines = note.content.split('\n');
-                    lines.forEach((line) => {
-                        if (line.includes("家長") || line.includes("親子") || line.includes("簽名") || line.includes("協助") || line.includes("共學") || line.includes("帶")) {
-                            assistItems.push({ date: note.date, text: line });
-                        }
-                    });
-                }
-            });
-
-            if (assistItems.length === 0) {
-                parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2">目前無特別需家長協助之項目 ✨</p>`;
+            if (activeNote && activeNote.parentAssist && activeNote.parentAssist.trim() !== '') {
+                parentAssistContainer.innerHTML = `
+                    <div class="p-3 bg-orange-50/60 rounded-xl border border-orange-200 text-xs space-y-1">
+                        <span class="font-bold text-orange-900"><i class="fa-solid fa-hands-holding-child mr-1"></i> (${activeNote.date}) 老師指定協助事項：</span>
+                        <p class="text-slate-700 whitespace-pre-line mt-1 pl-4">${activeNote.parentAssist}</p>
+                    </div>
+                `;
             } else {
-                assistItems.slice(0, 3).forEach(item => {
-                    parentAssistContainer.innerHTML += `
-                        <div class="p-2.5 bg-orange-50/60 rounded-xl border border-orange-200 mb-2">
-                            <span class="font-bold text-orange-900">📌 (${item.date})</span>
-                            <p class="text-slate-700 mt-0.5">${item.text}</p>
-                        </div>
-                    `;
-                });
+                parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2">目前無特別需家長協助之項目 ✨</p>`;
             }
 
-            // 第二頁：傷病通知紀錄（未確認 vs 已確認）
+            // 第二頁：傷病通知紀錄
             const pendingContainer = document.getElementById('pending-injury-list');
             const confirmedContainer = document.getElementById('confirmed-injury-list');
             pendingContainer.innerHTML = '';
