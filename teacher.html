@@ -7,24 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 舒壓柔和護眼風設定 */
-        body { 
-            background-color: #E6F4F1; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            color: #2F4F4F; 
-        }
-        .soft-card {
-            background-color: #FFFFFF;
-            border: 2px solid #A3D2CA;
-            border-radius: 28px;
-            box-shadow: 0 4px 12px rgba(47, 79, 79, 0.05);
-        }
-        .soft-header {
-            background-color: #F0F7F6;
-            border-bottom: 2px solid #A3D2CA;
-            border-top-left-radius: 25px;
-            border-top-right-radius: 25px;
-        }
+        body { background-color: #E6F4F1; font-family: system-ui, -apple-system, sans-serif; color: #2F4F4F; }
+        .soft-card { background-color: #FFFFFF; border: 2px solid #A3D2CA; border-radius: 28px; box-shadow: 0 4px 12px rgba(47, 79, 79, 0.05); }
+        .soft-header { background-color: #F0F7F6; border-bottom: 2px solid #A3D2CA; border-top-left-radius: 25px; border-top-right-radius: 25px; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -168,8 +153,8 @@
                             <div>
                                 <label class="block font-bold text-[#2F4F4F] mb-1">處理人員</label>
                                 <select id="inj-nurse" required class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
-                                    <option value="保健室">保健室</option>
-                                    <option value="教室觀察">教室觀察</option>
+                                    <option value="保健室">選項一：保健室</option>
+                                    <option value="教室觀察">選項二：教室觀察</option>
                                 </select>
                             </div>
                         </div>
@@ -366,7 +351,6 @@
                 } else {
                     parsed.notesList.sort((a, b) => new Date(b.id) - new Date(a.id));
                 }
-                if (!parsed.activeNoteId) parsed.activeNoteId = parsed.notesList[0].id;
                 if (!parsed.students || Object.keys(parsed.students).length < 25) {
                     parsed.students = freshData.students;
                 }
@@ -430,7 +414,7 @@
                 reminder: "帶外套。"
             }];
 
-            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId };
+            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList };
         }
 
         function directLogin() {
@@ -473,7 +457,7 @@
             document.getElementById('setting-classname').value = cInfo.className;
             document.getElementById('setting-teacher').value = cInfo.teacherName;
 
-            let activeNote = systemData.notesList.find(n => n.id === systemData.activeNoteId) || systemData.notesList[0];
+            let activeNote = systemData.notesList[0] || null;
 
             document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote ? activeNote.date : '無'}`;
 
@@ -665,13 +649,12 @@
             listContainer.innerHTML = '';
 
             systemData.notesList.forEach((note) => {
-                const isActive = note.id === systemData.activeNoteId;
+                const isActive = note.id === (systemData.notesList[0] ? systemData.notesList[0].id : '');
                 listContainer.innerHTML += `
                     <div class="p-4 rounded-2xl ${isActive ? 'bg-[#D8E8E5] border-[#598379]' : 'bg-[#F0F7F6] border-[#A3D2CA]'} border text-sm space-y-2">
                         <div class="flex justify-between items-center font-bold ${isActive ? 'text-[#2F4F4F]' : 'text-slate-800'}">
                             <span>${isActive ? '📌 【當前顯示中】' : '📜'} 聯絡簿 (${note.date})</span>
                             <div class="flex gap-1.5">
-                                ${!isActive ? `<button onclick="setActiveNote('${note.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">設為當前</button>` : ''}
                                 <button onclick="editNote('${note.id}')" class="bg-[#598379] hover:bg-[#4A6B63] text-white px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">編輯</button>
                                 <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">刪除</button>
                             </div>
@@ -680,10 +663,6 @@
                     </div>
                 `;
             });
-
-            if (!editingNoteId && systemData.notesList.length > 0) {
-                editNote(systemData.activeNoteId);
-            }
         }
 
         async function deleteNote(id) {
@@ -695,25 +674,13 @@
 
             if (confirm("確定要刪除這篇聯絡簿嗎？")) {
                 systemData.notesList = systemData.notesList.filter(n => n.id !== id);
-                if (systemData.activeNoteId === id) {
-                    systemData.activeNoteId = systemData.notesList[0].id;
-                }
                 await saveSystemData(systemData);
                 alert("聯絡簿已成功刪除！");
                 loadTeacherData();
             }
         }
 
-        async function setActiveNote(id) {
-            const systemData = getSystemData();
-            systemData.activeNoteId = id;
-            await saveSystemData(systemData);
-            loadTeacherData();
-            alert("已成功切換當前顯示的聯絡簿！作業區已同步更新。");
-        }
-
         function editNote(id) {
-            editingNoteId = id;
             const systemData = getSystemData();
             const note = systemData.notesList.find(n => n.id === id);
             if (!note) return;
@@ -726,7 +693,6 @@
         }
 
         function prepareNewNote() {
-            editingNoteId = 'new';
             document.getElementById('note-date').value = getTaiwanTaipeiDateString();
             document.getElementById('note-content').value = "";
             document.getElementById('note-parent-message').value = "";
@@ -756,6 +722,7 @@
             const correctedDateStr = parseAndCorrectDateString(rawDateVal);
 
             const updatedNoteData = {
+                id: new Date().toISOString(), // 每次儲存或新增都以最新時間戳記排在最前面
                 date: correctedDateStr,
                 content: contentVal,
                 parentMessage: document.getElementById('note-parent-message').value,
@@ -763,25 +730,11 @@
                 reminder: document.getElementById('note-reminder').value
             };
 
-            if (editingNoteId === 'new') {
-                const newId = new Date().toISOString();
-                systemData.notesList.unshift({ id: newId, ...updatedNoteData });
-                systemData.activeNoteId = newId;
-                editingNoteId = newId;
-            } else {
-                const idx = systemData.notesList.findIndex(n => n.id === editingNoteId);
-                if (idx !== -1) {
-                    systemData.notesList[idx] = { id: editingNoteId, ...updatedNoteData };
-                } else {
-                    const newId = new Date().toISOString();
-                    systemData.notesList.unshift({ id: newId, ...updatedNoteData });
-                    systemData.activeNoteId = newId;
-                    editingNoteId = newId;
-                }
-            }
+            // 將新聯絡簿推到最前面，並保留過去所有的歷史聯絡簿不被覆蓋
+            systemData.notesList.unshift(updatedNoteData);
             
             await saveSystemData(systemData);
-            alert(`聯絡簿已成功儲存與雲端同步！日期已自動校正為：${correctedDateStr}`);
+            alert(`聯絡簿已成功儲存與雲端同步！歷史紀錄已完整保留。`);
             loadTeacherData();
         }
 
