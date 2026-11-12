@@ -7,24 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 舒壓柔和護眼風設定 */
-        body { 
-            background-color: #E6F4F1; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            color: #2F4F4F; 
-        }
-        .soft-card {
-            background-color: #FFFFFF;
-            border: 2px solid #A3D2CA;
-            border-radius: 28px;
-            box-shadow: 0 4px 12px rgba(47, 79, 79, 0.05);
-        }
-        .soft-header {
-            background-color: #F0F7F6;
-            border-bottom: 2px solid #A3D2CA;
-            border-top-left-radius: 25px;
-            border-top-right-radius: 25px;
-        }
+        body { background-color: #E6F4F1; font-family: system-ui, -apple-system, sans-serif; color: #2F4F4F; }
+        .soft-card { background-color: #FFFFFF; border: 2px solid #A3D2CA; border-radius: 28px; box-shadow: 0 4px 12px rgba(47, 79, 79, 0.05); }
+        .soft-header { background-color: #F0F7F6; border-bottom: 2px solid #A3D2CA; border-top-left-radius: 25px; border-top-right-radius: 25px; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -81,15 +66,18 @@
         <!-- 儀表板主畫面 -->
         <div id="dashboard-section" class="hidden space-y-6">
             <div class="flex bg-[#D8E8E5] p-1.5 rounded-2xl border-2 border-[#A3D2CA]">
-                <button onclick="switchTab('today')" id="tab-today" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition">
-                    <i class="fa-solid fa-sun mr-1"></i> 首頁 (聯絡簿與作業)
+                <button onclick="switchTab('today')" id="tab-today" class="flex-1 py-2 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition">
+                    今日聯絡簿與作業
                 </button>
-                <button onclick="switchTab('injury')" id="tab-injury" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-[#598379] transition">
-                    <i class="fa-solid fa-notes-medical mr-1"></i> 傷病通知紀錄
+                <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-2 text-xs font-bold rounded-lg text-[#598379] transition">
+                    歷史點滴紀錄
+                </button>
+                <button onclick="switchTab('injury')" id="tab-injury" class="flex-1 py-2 text-xs font-bold rounded-lg text-[#598379] transition">
+                    傷病通知紀錄
                 </button>
             </div>
 
-            <!-- 第一頁：聯絡簿與作業四大區塊 -->
+            <!-- 第一頁：今日聯絡簿與作業四大區塊 -->
             <div id="view-today" class="space-y-6">
                 
                 <!-- 當天聯絡簿內容與老師提醒 -->
@@ -149,7 +137,17 @@
 
             </div>
 
-            <!-- 第二頁：傷病通知紀錄 -->
+            <!-- 第二頁：歷史點滴紀錄（完整保留所有歷史聯絡簿） -->
+            <div id="view-history" class="space-y-6 hidden">
+                <section class="soft-card p-5 space-y-4">
+                    <h2 class="font-bold text-[#2F4F4F] text-sm flex items-center gap-2 border-b border-[#A3D2CA] pb-2">
+                        <i class="fa-solid fa-box-archive text-[#598379]"></i> 歷史聯絡簿完整總覽（隨時翻閱）
+                    </h2>
+                    <div class="space-y-3 max-h-96 overflow-y-auto pr-1" id="all-history-notes-container"></div>
+                </section>
+            </div>
+
+            <!-- 第三頁：傷病通知紀錄 -->
             <div id="view-injury" class="space-y-6 hidden">
                 <section class="soft-card p-5 space-y-4">
                     <h2 class="font-bold text-[#2F4F4F] text-sm flex items-center gap-2 border-b border-[#A3D2CA] pb-2">
@@ -191,6 +189,7 @@
                 autoLoginParent(rememberedId, systemData);
             }
 
+            // 每 5 秒自動與雲端同步一次，確保手機與電腦即時連動
             setInterval(async () => {
                 await syncLoadData();
                 if (currentStudentId) {
@@ -199,7 +198,7 @@
                         renderDashboard(latestData.students[currentStudentId], latestData);
                     }
                 }
-            }, 10000);
+            }, 5000);
         };
 
         async function syncLoadData() {
@@ -238,7 +237,6 @@
                 } else {
                     parsed.notesList.sort((a, b) => new Date(b.id) - new Date(a.id));
                 }
-                if (!parsed.activeNoteId) parsed.activeNoteId = parsed.notesList[0].id;
                 if (!parsed.students || Object.keys(parsed.students).length < 25) {
                     parsed.students = freshData.students;
                 }
@@ -283,7 +281,7 @@
                 reminder: "帶外套。"
             }];
 
-            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList, activeNoteId: defaultId };
+            return { students: students, classInfo: { schoolName: "崇明國小", className: "三年九班", teacherName: "陽芯妮" }, notesList: defaultNotesList };
         }
 
         let currentStudentId = null;
@@ -398,6 +396,26 @@
                 parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2 font-medium">目前無特別需家長協助之項目 ✨</p>`;
             }
 
+            // 歷史聯絡簿完整總覽
+            const historyNotesContainer = document.getElementById('all-history-notes-container');
+            historyNotesContainer.innerHTML = '';
+            if (systemData.notesList.length === 0) {
+                historyNotesContainer.innerHTML = `<p class="text-center text-xs text-slate-400 py-3">尚無歷史聯絡簿紀錄</p>`;
+            } else {
+                systemData.notesList.forEach(note => {
+                    historyNotesContainer.innerHTML += `
+                        <div class="p-4 bg-[#F0F7F6] rounded-2xl border border-[#A3D2CA] text-sm space-y-1.5">
+                            <p class="font-bold text-[#2F4F4F]"><i class="fa-solid fa-calendar-days mr-1 text-[#598379]"></i> ${note.date}</p>
+                            <p class="text-slate-800 whitespace-pre-line font-medium">${note.content}</p>
+                            ${note.parentMessage ? `<p class="text-[#2F4F4F] bg-[#E0F2F1] p-2.5 rounded-xl mt-1 font-medium">老師的話：${note.parentMessage}</p>` : ''}
+                            ${note.parentAssist ? `<p class="text-[#5D4037] bg-[#FFF9C4] p-2.5 rounded-xl mt-1 font-medium">協助事項：${note.parentAssist}</p>` : ''}
+                            ${note.reminder ? `<p class="text-[#00897B] bg-[#E0F2F1] p-2 rounded-xl mt-1 font-medium">叮嚀備註：${note.reminder}</p>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            // 傷病通知紀錄
             const pendingContainer = document.getElementById('pending-injury-list');
             const confirmedContainer = document.getElementById('confirmed-injury-list');
             pendingContainer.innerHTML = '';
@@ -485,10 +503,12 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab-today').className = tab === 'today' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition" : "flex-1 py-2.5 text-xs font-bold rounded-lg text-[#598379] transition";
-            document.getElementById('tab-injury').className = tab === 'injury' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition" : "flex-1 py-2.5 text-xs font-bold rounded-lg text-[#598379] transition";
+            document.getElementById('tab-today').className = tab === 'today' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-[#598379] transition";
+            document.getElementById('tab-history').className = tab === 'history' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-[#598379] transition";
+            document.getElementById('tab-injury').className = tab === 'injury' ? "flex-1 py-2 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition" : "flex-1 py-2 text-xs font-bold rounded-lg text-[#598379] transition";
 
             document.getElementById('view-today').classList.toggle('hidden', tab !== 'today');
+            document.getElementById('view-history').classList.toggle('hidden', tab !== 'history');
             document.getElementById('view-injury').classList.toggle('hidden', tab !== 'injury');
         }
 
