@@ -22,7 +22,7 @@
                     <i class="fa-solid fa-shield-cat"></i>
                 </div>
                 <h2 class="text-xl font-bold text-[#2F4F4F]">教師溫馨後台</h2>
-                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼</p>
+                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼 (t309 / 0909)</p>
             </div>
 
             <div class="space-y-4 text-sm">
@@ -51,14 +51,14 @@
     <!-- 教師後台主介面 -->
     <div id="teacher-dashboard" class="hidden flex flex-col min-h-screen">
         <header class="bg-[#598379] text-white shadow-sm sticky top-0 z-40">
-            <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <div class="bg-white/80 p-2 rounded-2xl text-[#2F4F4F] shadow-sm">
                         <i class="fa-solid fa-chalkboard-user text-base"></i>
                     </div>
                     <div>
                         <h1 class="font-bold text-base" id="teacher-header-title">班級 • 教師溫馨後台</h1>
-                        <p class="text-xs text-[#E6F4F1]">作業與傷病狀態追蹤系統</p>
+                        <p class="text-xs text-[#E6F4F1]">作業與個別協助事項追蹤系統</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -69,18 +69,18 @@
             </div>
         </header>
 
-        <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+        <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
             <div class="flex bg-[#D8E8E5] p-1.5 rounded-2xl max-w-2xl mx-auto overflow-x-auto border-2 border-[#A3D2CA]">
-                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4">作業與訂正</button>
+                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4">作業與個別協助</button>
                 <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4">聯絡簿管理</button>
                 <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4">傷病通知</button>
                 <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4"><i class="fa-solid fa-gear mr-1"></i>班級設定</button>
             </div>
 
-            <!-- 1. 作業與訂正管理 -->
+            <!-- 1. 作業與個別協助管理 -->
             <div id="section-homework" class="soft-card p-5 space-y-4">
                 <div class="soft-header px-4 py-2.5 flex justify-between items-center -mx-5 -mt-5 mb-3">
-                    <h2 class="font-bold text-[#2F4F4F] text-sm"><i class="fa-solid fa-list-check text-[#598379] mr-2"></i>全班作業狀態管理</h2>
+                    <h2 class="font-bold text-[#2F4F4F] text-sm"><i class="fa-solid fa-list-check text-[#598379] mr-2"></i>全班作業狀態與個別家長協助事項填寫</h2>
                     <span id="hw-current-date-tag" class="text-xs bg-[#C8E6C9] text-[#2F4F4F] px-3.5 py-1 rounded-full font-bold shadow-sm">載入中...</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -117,10 +117,6 @@
                         <div>
                             <label class="block font-bold text-[#2F4F4F] mb-1" id="teacher-msg-label">📢 老師提醒 / 給家長的話</label>
                             <textarea id="note-parent-message" rows="3" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium"></textarea>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-[#2F4F4F] mb-1">🤝 需家長協助完成之作業 / 親子共學（打字輸入填寫）</label>
-                            <textarea id="note-parent-assist" rows="2" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium" placeholder="請在此打字輸入需家長協助之未繳交或配合事項..."></textarea>
                         </div>
                         <div>
                             <label class="block font-bold text-[#2F4F4F] mb-1">叮嚀備註</label>
@@ -385,29 +381,14 @@
             return `民國 ${year} 年 ${month} 月 ${day} 日 (${weekday})`;
         }
 
-        function parseAndCorrectDateString(inputStr) {
-            if (!inputStr) return getTaiwanTaipeiDateString();
-            const match = inputStr.match(/(?:民國\s*(\d+)\s*年)?\s*(\d+)\s*月\s*(\d+)\s*日/);
-            if (match) {
-                let year = match[1] ? parseInt(match[1]) + 1911 : new Date().getFullYear();
-                let month = parseInt(match[2]) - 1;
-                let day = parseInt(match[3]);
-                const targetDate = new Date(year, month, day);
-                if (!isNaN(targetDate.getTime())) {
-                    return formatTaiwanTaipeiDate(targetDate);
-                }
-            }
-            return inputStr;
-        }
-
         function generateDefaultData() {
-            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡沛穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
+            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
             const ids = ["113056", "113058", "113164", "113166", "113245", "113140", "113248", "113010", "113037", "113279", "113123", "113200", "113015", "113017", "113151", "113284", "113178", "113204", "113021", "113205", "113232", "113208", "113129", "113134", "113212"];
             let students = {};
             ids.forEach((id, index) => {
-                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, injuries: [] };
+                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, parentAssist: "", injuries: [] };
             });
-            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, injuries: [] };
+            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, parentAssist: "", injuries: [] };
 
             const defaultId = new Date().toISOString();
             const defaultNotesList = [{
@@ -415,7 +396,6 @@
                 date: getTaiwanTaipeiDateString(),
                 content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
                 parentMessage: "本週三有戶外教學。",
-                parentAssist: "請家長協助指導數學單元複習並簽名",
                 reminder: "帶外套。"
             }];
 
@@ -456,14 +436,11 @@
             const cInfo = systemData.classInfo || { schoolName: "崇明國小", className: "三年九班", teacherName: "老師" };
             
             document.getElementById('teacher-header-title').innerText = `${cInfo.className} • 教師溫馨後台`;
-            document.getElementById('teacher-msg-label').innerText = `📢 ${cInfo.teacherName}老師提醒 / 給家長的話`;
-
             document.getElementById('setting-school').value = cInfo.schoolName;
             document.getElementById('setting-classname').value = cInfo.className;
             document.getElementById('setting-teacher').value = cInfo.teacherName;
 
             let activeNote = systemData.notesList[0] || null;
-
             document.getElementById('hw-current-date-tag').innerText = `目前檢視：${activeNote ? activeNote.date : '無'}`;
 
             const hwLines = activeNote && activeNote.content ? activeNote.content.split('\n').filter(line => line.trim() !== '') : [];
@@ -476,6 +453,7 @@
                     theadHtml += `<th class="p-3">${line}</th>`;
                 });
             }
+            theadHtml += `<th class="p-3">需家長協助之作業 / 個別事項</th>`;
             theadHtml += `<th class="p-3 text-center">快捷操作</th>`;
             thead.innerHTML = theadHtml;
 
@@ -518,6 +496,14 @@
                         `;
                     });
                 }
+
+                // 個別學生需家長協助之作業打字輸入欄位
+                const parentAssistVal = student.parentAssist || "";
+                rowHtml += `
+                    <td class="p-3">
+                        <input type="text" value="${parentAssistVal}" onchange="updateParentAssist('${id}', this.value)" placeholder="輸入個別協助事項..." class="w-full px-3 py-2 rounded-xl border border-[#A3D2CA] bg-white text-sm font-medium">
+                    </td>
+                `;
 
                 rowHtml += `
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
@@ -580,6 +566,14 @@
 
             if (!hasInjury) {
                 injuryStatusList.innerHTML = `<p class="text-center text-xs text-[#598379] font-bold py-3">目前沒有發送任何傷病通知單</p>`;
+            }
+        }
+
+        async function updateParentAssist(studentId, val) {
+            const systemData = getSystemData();
+            if (systemData.students[studentId]) {
+                systemData.students[studentId].parentAssist = val;
+                await saveSystemData(systemData);
             }
         }
 
@@ -660,8 +654,7 @@
                         <div class="flex justify-between items-center font-bold ${isActive ? 'text-[#2F4F4F]' : 'text-slate-800'}">
                             <span>${isActive ? '📌 【當前顯示中】' : '📜'} 聯絡簿 (${note.date})</span>
                             <div class="flex gap-1.5">
-                                <button onclick="editNote('${note.id}')" class="bg-[#598379] hover:bg-[#4A6B63] text-white px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">編輯</button>
-                                <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">乾燥</button>
+                                <button onclick="deleteNote('${note.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded-xl text-xs shadow-sm transition font-bold">刪除</button>
                             </div>
                         </div>
                         <p class="text-slate-800 whitespace-pre-line font-medium">${note.content}</p>
@@ -685,23 +678,10 @@
             }
         }
 
-        function editNote(id) {
-            const systemData = getSystemData();
-            const note = systemData.notesList.find(n => n.id === id);
-            if (!note) return;
-
-            document.getElementById('note-date').value = note.date;
-            document.getElementById('note-content').value = note.content;
-            document.getElementById('note-parent-message').value = note.parentMessage || "";
-            document.getElementById('note-parent-assist').value = note.parentAssist || "";
-            document.getElementById('note-reminder').value = note.reminder || "";
-        }
-
         function prepareNewNote() {
             document.getElementById('note-date').value = getTaiwanTaipeiDateString();
             document.getElementById('note-content').value = "";
             document.getElementById('note-parent-message').value = "";
-            document.getElementById('note-parent-assist').value = "";
             document.getElementById('note-reminder').value = "";
             alert("已準備好發布新的一天聯絡簿！系統已自動帶入正確的台北標準日期與星期。");
         }
@@ -731,7 +711,6 @@
                 date: correctedDateStr,
                 content: contentVal,
                 parentMessage: document.getElementById('note-parent-message').value,
-                parentAssist: document.getElementById('note-parent-assist').value,
                 reminder: document.getElementById('note-reminder').value
             };
 
@@ -753,7 +732,7 @@
             }
 
             const systemData = getSystemData();
-            systemData.students[id] = { name: name, seat: seat, homeworkStatus: {}, injuries: [] };
+            systemData.students[id] = { name: name, seat: seat, homeworkStatus: {}, parentAssist: "", injuries: [] };
 
             await saveSystemData(systemData);
             alert(`已成功新增/更新學生：${seat} 號 ${name}！`);
