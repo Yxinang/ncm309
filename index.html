@@ -137,7 +137,7 @@
 
             </div>
 
-            <!-- 第二頁：歷史點滴紀錄（完整保留所有歷史聯絡簿） -->
+            <!-- 第二頁：歷史點滴紀錄 -->
             <div id="view-history" class="space-y-6 hidden">
                 <section class="soft-card p-5 space-y-4">
                     <h2 class="font-bold text-[#2F4F4F] text-sm flex items-center gap-2 border-b border-[#A3D2CA] pb-2">
@@ -189,7 +189,6 @@
                 autoLoginParent(rememberedId, systemData);
             }
 
-            // 每 5 秒自動與雲端同步一次，確保手機與電腦即時連動
             setInterval(async () => {
                 await syncLoadData();
                 if (currentStudentId) {
@@ -198,14 +197,12 @@
                         renderDashboard(latestData.students[currentStudentId], latestData);
                     }
                 }
-            }, 5000);
+            }, 3000); // 縮短為每 3 秒自動同步一次
         };
 
         async function syncLoadData() {
             try {
-                const response = await fetch(`${CLOUD_BIN_URL}/latest`, {
-                    headers: { 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' }
-                });
+                const response = await cacheBustFetch(`${CLOUD_BIN_URL}/latest`);
                 if (response.ok) {
                     const cloudResult = await response.json();
                     if (cloudResult && cloudResult.record) {
@@ -218,6 +215,13 @@
             } catch (e) {
                 console.log("使用本地快取資料");
             }
+        }
+
+        async function cacheBustFetch(url) {
+            const separator = url.includes('?') ? '&' : '?';
+            return fetch(`${url}${separator}_t=${new Date().getTime()}`, {
+                headers: { 'X-Master-Key': '$2a$10$95bW31HqL48Jb8Q5Vf3d1eK7n9bW31HqL48Jb8Q5Vf3d1eK7n9bW3' }
+            });
         }
 
         function getSystemData() {
@@ -396,7 +400,6 @@
                 parentAssistContainer.innerHTML = `<p class="text-slate-500 text-center py-2 font-medium">目前無特別需家長協助之項目 ✨</p>`;
             }
 
-            // 歷史聯絡簿完整總覽
             const historyNotesContainer = document.getElementById('all-history-notes-container');
             historyNotesContainer.innerHTML = '';
             if (systemData.notesList.length === 0) {
@@ -415,7 +418,6 @@
                 });
             }
 
-            // 傷病通知紀錄
             const pendingContainer = document.getElementById('pending-injury-list');
             const confirmedContainer = document.getElementById('confirmed-injury-list');
             pendingContainer.innerHTML = '';
