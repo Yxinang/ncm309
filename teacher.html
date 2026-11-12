@@ -37,7 +37,7 @@
                     <i class="fa-solid fa-shield-cat"></i>
                 </div>
                 <h2 class="text-xl font-bold text-[#2F4F4F]">教師溫馨後台</h2>
-                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼</p>
+                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼 (t309 / 0909)</p>
             </div>
 
             <div class="space-y-4 text-sm">
@@ -134,8 +134,8 @@
                             <textarea id="note-parent-message" rows="3" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium"></textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-[#2F4F4F] mb-1">🤝 需家長協助完成之作業 / 親子共學（第四區塊顯示內容）</label>
-                            <textarea id="note-parent-assist" rows="2" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium" placeholder="例如：請家長協助指導數學單元複習並簽名"></textarea>
+                            <label class="block font-bold text-[#2F4F4F] mb-1">🤝 需家長協助完成之作業 / 親子共學（打字輸入填寫）</label>
+                            <textarea id="note-parent-assist" rows="2" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium" placeholder="請在此打字輸入需家長協助之未繳交或配合事項..."></textarea>
                         </div>
                         <div>
                             <label class="block font-bold text-[#2F4F4F] mb-1">叮嚀備註</label>
@@ -166,9 +166,16 @@
                                 <input type="text" id="inj-time" required value="上午 10:15" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
                             </div>
                             <div>
-                                <label class="block font-bold text-[#2F4F4F] mb-1">發生地點</label>
-                                <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
+                                <label class="block font-bold text-[#2F4F4F] mb-1">處理人員</label>
+                                <select id="inj-nurse" required class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
+                                    <option value="保健室">選項一：保健室</option>
+                                    <option value="教室觀察">選項二：教室觀察</option>
+                                </select>
                             </div>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-[#2F4F4F] mb-1">發生地點</label>
+                            <input type="text" id="inj-location" required value="下課遊樂場" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
                         </div>
                         <div>
                             <label class="block font-bold text-[#2F4F4F] mb-1">受傷症狀</label>
@@ -258,9 +265,16 @@
                         <input type="text" id="edit-inj-time" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] font-medium">
                     </div>
                     <div>
-                        <label class="block font-bold text-[#2F4F4F] mb-1">發生地點</label>
-                        <input type="text" id="edit-inj-location" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] font-medium">
+                        <label class="block font-bold text-[#2F4F4F] mb-1">處理人員</label>
+                        <select id="edit-inj-nurse" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] bg-white font-medium">
+                            <option value="保健室">選項一：保健室</option>
+                            <option value="教室觀察">選項二：教室觀察</option>
+                        </select>
                     </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-[#2F4F4F] mb-1">發生地點</label>
+                    <input type="text" id="edit-inj-location" class="w-full px-3.5 py-3 rounded-xl border border-[#A3D2CA] font-medium">
                 </div>
                 <div>
                     <label class="block font-bold text-[#2F4F4F] mb-1">受傷症狀</label>
@@ -559,7 +573,7 @@
                                         ${isConfirmed ? '家長已確認收到 (' + inj.confirmTime + ')' : '尚未確認'}
                                     </span>
                                 </div>
-                                <p class="text-slate-800 font-medium">地點：${inj.location} | 狀況：${inj.symptom}</p>
+                                <p class="text-slate-800 font-medium">處理人員：${inj.nurse} | 地點：${inj.location} | 狀況：${inj.symptom}</p>
                                 <p class="text-slate-800 bg-white p-3 rounded-xl border border-[#A3D2CA] font-medium">處置：${inj.treatment}</p>
                                 <div class="flex justify-end gap-2 pt-1 border-t border-[#A3D2CA]">
                                     <button onclick="openInjuryEdit('${id}', ${injIndex})" class="bg-[#C8E6C9] hover:bg-[#A5D6A7] text-[#2F4F4F] px-3 py-1.5 rounded-xl font-bold transition text-xs"><i class="fa-solid fa-pen mr-1"></i> 修改</button>
@@ -586,6 +600,7 @@
             document.getElementById('edit-inj-student-id').value = studentId;
             document.getElementById('edit-inj-index').value = injIndex;
             document.getElementById('edit-inj-time').value = inj.time;
+            document.getElementById('edit-inj-nurse').value = inj.nurse || "保健室";
             document.getElementById('edit-inj-location').value = inj.location;
             document.getElementById('edit-inj-symptom').value = inj.symptom;
             document.getElementById('edit-inj-treatment').value = inj.treatment;
@@ -602,6 +617,7 @@
 
             const systemData = getSystemData();
             systemData.students[studentId].injuries[injIndex].time = document.getElementById('edit-inj-time').value;
+            systemData.students[studentId].injuries[injIndex].nurse = document.getElementById('edit-inj-nurse').value;
             systemData.students[studentId].injuries[injIndex].location = document.getElementById('edit-inj-location').value;
             systemData.students[studentId].injuries[injIndex].symptom = document.getElementById('edit-inj-symptom').value;
             systemData.students[studentId].injuries[injIndex].treatment = document.getElementById('edit-inj-treatment').value;
@@ -817,10 +833,10 @@
             const newInjury = {
                 date: getTaiwanTaipeiDateString(),
                 time: document.getElementById('inj-time').value,
+                nurse: document.getElementById('inj-nurse').value,
                 location: document.getElementById('inj-location').value,
                 symptom: document.getElementById('inj-symptom').value,
                 treatment: document.getElementById('inj-treatment').value,
-                nurse: "張護理師",
                 confirmed: false,
                 confirmTime: null
             };
