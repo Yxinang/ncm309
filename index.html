@@ -125,10 +125,10 @@
                     </div>
                 </section>
 
-                <!-- 需家長協助完成之作業 -->
+                <!-- 需家長協助完成之作業 (個別學生專屬資料) -->
                 <section class="soft-card p-5 space-y-3 bg-[#FFF9C4]/30 border-[#FFE082]">
                     <h2 class="font-bold text-[#5D4037] text-sm flex items-center gap-2 border-b border-[#FFE082] pb-2">
-                        <i class="fa-solid fa-hands-holding-child text-amber-600"></i> 需家長協助完成之作業 / 親子共學
+                        <i class="fa-solid fa-hands-holding-child text-amber-600"></i> 需家長協助完成之作業 / 個別事項
                     </h2>
                     <div class="bg-white p-4 rounded-2xl border border-[#FFE082] text-sm space-y-2" id="parent-assist-homework-list">
                         <p class="text-slate-500 text-center py-1">目前無特別需家長協助之項目 ✨</p>
@@ -197,7 +197,7 @@
                         renderDashboard(latestData.students[currentStudentId], latestData);
                     }
                 }
-            }, 3000); // 縮短為每 3 秒自動同步一次
+            }, 3000);
         };
 
         async function syncLoadData() {
@@ -271,9 +271,9 @@
             const ids = ["113056", "113058", "113164", "113166", "113245", "113140", "113248", "113010", "113037", "113279", "113123", "113200", "113015", "113017", "113151", "113284", "113178", "113204", "113021", "113205", "113232", "113208", "113129", "113134", "113212"];
             let students = {};
             ids.forEach((id, index) => {
-                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, injuries: [] };
+                students[id] = { name: names[index], seat: String(index + 1), homeworkStatus: {}, parentAssist: "", injuries: [] };
             });
-            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, injuries: [] };
+            students["123"] = { name: "測試帳號", seat: "30", homeworkStatus: {}, parentAssist: "", injuries: [] };
 
             const defaultId = new Date().toISOString();
             const defaultNotesList = [{
@@ -281,7 +281,6 @@
                 date: getTaiwanTaipeiDateString(),
                 content: "1. 國文習作第 4 課完成\n2. 數學隨堂練習卷",
                 parentMessage: "本週三有戶外教學。",
-                parentAssist: "請家長協助指導數學單元複習並簽名",
                 reminder: "帶外套。"
             }];
 
@@ -386,14 +385,15 @@
                 yesterdayHwContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">昨日無作業狀態追蹤</p>`;
             }
 
+            // 個別學生專屬的需家長協助作業/事項顯示
             const parentAssistContainer = document.getElementById('parent-assist-homework-list');
             parentAssistContainer.innerHTML = '';
             
-            if (activeNote && activeNote.parentAssist && activeNote.parentAssist.trim() !== '') {
+            if (student.parentAssist && student.parentAssist.trim() !== '') {
                 parentAssistContainer.innerHTML = `
                     <div class="p-3.5 bg-[#FFF9C4] rounded-xl border border-[#FFE082] text-sm space-y-1">
-                        <span class="font-bold text-[#5D4037]"><i class="fa-solid fa-hands-holding-child mr-1"></i> (${activeNote.date}) 老師指定協助事項：</span>
-                        <p class="text-[#3E2723] whitespace-pre-line mt-1 pl-4 font-medium">${activeNote.parentAssist}</p>
+                        <span class="font-bold text-[#5D4037]"><i class="fa-solid fa-hands-holding-child mr-1"></i> 老師給家長的個別協助事項：</span>
+                        <p class="text-[#3E2723] whitespace-pre-line mt-1 pl-4 font-medium">${student.parentAssist}</p>
                     </div>
                 `;
             } else {
@@ -411,7 +411,6 @@
                             <p class="font-bold text-[#2F4F4F]"><i class="fa-solid fa-calendar-days mr-1 text-[#598379]"></i> ${note.date}</p>
                             <p class="text-slate-800 whitespace-pre-line font-medium">${note.content}</p>
                             ${note.parentMessage ? `<p class="text-[#2F4F4F] bg-[#E0F2F1] p-2.5 rounded-xl mt-1 font-medium">老師的話：${note.parentMessage}</p>` : ''}
-                            ${note.parentAssist ? `<p class="text-[#5D4037] bg-[#FFF9C4] p-2.5 rounded-xl mt-1 font-medium">協助事項：${note.parentAssist}</p>` : ''}
                             ${note.reminder ? `<p class="text-[#00897B] bg-[#E0F2F1] p-2 rounded-xl mt-1 font-medium">叮嚀備註：${note.reminder}</p>` : ''}
                         </div>
                     `;
