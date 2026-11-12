@@ -22,7 +22,7 @@
                     <i class="fa-solid fa-shield-cat"></i>
                 </div>
                 <h2 class="text-xl font-bold text-[#2F4F4F]">教師溫馨後台</h2>
-                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼 (t309 / 0909)</p>
+                <p class="text-xs text-[#598379]">請輸入教師專屬帳號與密碼</p>
             </div>
 
             <div class="space-y-4 text-sm">
@@ -71,10 +71,10 @@
 
         <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
             <div class="flex bg-[#D8E8E5] p-1.5 rounded-2xl max-w-2xl mx-auto overflow-x-auto border-2 border-[#A3D2CA]">
-                <button onclick="switchTab('homework')" id="tab-hw" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4">作業與個別協助</button>
+                <button onclick="switchTab('homework')" id="tab-homework" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4">作業與個別協助</button>
                 <button onclick="switchTab('note')" id="tab-note" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4">聯絡簿管理</button>
-                <button onclick="switchTab('injury')" id="tab-inj" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4">傷病通知</button>
-                <button onclick="switchTab('settings')" id="tab-set" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4"><i class="fa-solid fa-gear mr-1"></i>班級設定</button>
+                <button onclick="switchTab('injury')" id="tab-injury" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4">傷病通知</button>
+                <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4"><i class="fa-solid fa-gear mr-1"></i>班級設定</button>
             </div>
 
             <!-- 1. 作業與個別協助管理 -->
@@ -382,7 +382,7 @@
         }
 
         function generateDefaultData() {
-            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡佩穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
+            const names = ["黃琨翔", "陳秉軒", "杜晨翔", "劉景碩", "王宇童", "吳立翔", "陳宇恩", "林楷諾", "李柏衡", "林晉翰", "徐堉綸", "紀孟希", "徐晟瀚", "王知言", "蔡沛穎", "鄭詠心", "郭聿芸", "楊茲甯", "王岑芝", "吳涵儒", "洪楀晴", "林芷萱", "潘若穎", "焉語霓", "蘇唯心"];
             const ids = ["113056", "113058", "113164", "113166", "113245", "113140", "113248", "113010", "113037", "113279", "113123", "113200", "113015", "113017", "113151", "113284", "113178", "113204", "113021", "113205", "113232", "113208", "113129", "113134", "113212"];
             let students = {};
             ids.forEach((id, index) => {
@@ -497,7 +497,6 @@
                     });
                 }
 
-                // 個別學生需家長協助之作業打字輸入欄位
                 const parentAssistVal = student.parentAssist || "";
                 rowHtml += `
                     <td class="p-3">
@@ -786,7 +785,7 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab-hw').className = tab === 'homework' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4";
+            document.getElementById('tab-homework').className = tab === 'homework' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4";
             document.getElementById('tab-note').className = tab === 'note' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4";
             document.getElementById('tab-injury').className = tab === 'injury' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4";
             document.getElementById('tab-settings').className = tab === 'settings' ? "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white text-[#2F4F4F] shadow-sm transition whitespace-nowrap px-4" : "flex-1 py-2.5 text-xs font-bold rounded-xl text-[#598379] transition whitespace-nowrap px-4";
